@@ -33,7 +33,7 @@ function App() {
             >
               <img
                 className="w-full h-48 object-cover"
-                src={STRAPI_URL + podcast.cover.url}
+                src={podcast.cover.url}
                 alt={podcast.title}
                 width={180}
                 height={38}
@@ -44,7 +44,7 @@ function App() {
                 </h3>
                 <p className="text-gray-600 mb-4">{podcast.description}</p>
                 <audio className="m-auto mb-4" controls>
-                  <source src={`${STRAPI_URL}${podcast.audio.url}`} />
+                  <source src={podcast.audio.url} />
                   Your browser does not support the audio.
                 </audio>
                 <p className="text-sm text-gray-500">
