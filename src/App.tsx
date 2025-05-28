@@ -6,6 +6,9 @@ import { Podcast } from "./types/podcast";
 import axios from "axios";
 import moment from "moment";
 
+const defaultImage =
+  "https://res.cloudinary.com/duyvjsf0v/image/upload/v1747400776/thumbnail_118691277_179046977069725_2224862497427294902_n_7f19471c25_715dbd1e55.jpg";
+
 function App() {
   const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
   const [podcasts, setPodcasts] = useState<Podcast[]>([]);
@@ -33,7 +36,7 @@ function App() {
             >
               <img
                 className="w-full h-48 object-cover"
-                src={podcast.cover.url}
+                src={podcast.cover?.url ?? defaultImage}
                 alt={podcast.title}
                 width={180}
                 height={38}
