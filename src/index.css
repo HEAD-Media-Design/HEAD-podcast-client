@@ -4,6 +4,8 @@
   --font-family-executive: "Noto Sans", sans-serif;
   --font-size-executive: 145px;
   --font-weight-executive: 500;
+  --font-family-spline-sans: "Spline Sans", sans-serif;
+  --font-family-spline-sans-mono: "Spline Sans Mono", sans-serif;
 }
 
 @tailwind base;
@@ -16,7 +18,7 @@
     font-family:
       -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
       "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
+      sans-serif, "Spline Sans", "Spline Sans Mono";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: black;
@@ -40,6 +42,24 @@
     text-align: right;
     color: #000;
   }
+
+  .font-spline-sans {
+    font-family: var(--font-family-spline-sans);
+  }
+
+  .font-spline-sans-bold {
+    font-family: var(--font-family-spline-sans);
+    font-weight: 700;
+  }
+
+  .font-spline-sans-mono {
+    font-family: var(--font-family-spline-sans-mono);
+  }
+
+  .font-spline-sans-mono-bold {
+    font-family: var(--font-family-spline-sans-mono);
+    font-weight: 700;
+  } 
 
   @media (min-width: 768px) {
     .font-executive {
@@ -75,7 +95,11 @@ html {
 }
 
 /* Focus styles for accessibility */
-*:focus {
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+*:focus-visible {
   outline: 2px solid black;
   outline-offset: 2px;
 }
