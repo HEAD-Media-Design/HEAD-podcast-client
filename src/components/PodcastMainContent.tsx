@@ -10,41 +10,55 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   onNextPodcast,
 }) => {
   return (
-    <div className="flex-1 flex items-center justify-center p-6">
-      <div className="flex items-center space-x-8 max-w-4xl w-full">
-        {/* Previous Button */}
-        <button
-          onClick={onPrevPodcast}
-          className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
+    <div className="flex-1 relative flex items-center justify-center p-6 pb-[120px] md:pb-6 h-full">
+      {/* Previous Button - Floating Left */}
+      <button
+        onClick={onPrevPodcast}
+        className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors cursor-pointer z-10 md:w-[52px] md:h-[52px] w-[26px] h-[26px]"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="56"
+          height="52"
+          viewBox="0 0 56 52"
+          fill="none"
         >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-          </svg>
-        </button>
+          <line x1="5" y1="48" x2="5" y2="4" stroke="black" strokeWidth="10" />
+          <path d="M4 26L43 3.48333L43 48.5167L4 26Z" fill="black" />
+        </svg>
+      </button>
 
-        {/* Main Title */}
-        <div className="flex-1 text-center">
-          <h1 className="text-6xl md:text-8xl font-bold text-black leading-none">
-            VOICES
-          </h1>
-          <h2 className="text-6xl md:text-8xl font-bold text-black leading-none">
-            OF
-          </h2>
-          <h3 className="text-6xl md:text-8xl font-bold text-black leading-none">
-            STUDENTS
-          </h3>
-        </div>
-
-        {/* Next Button */}
-        <button
-          onClick={onNextPodcast}
-          className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
-        >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M16 18h2V6h-2M6 18l8.5-6L6 6v12z" />
-          </svg>
-        </button>
+      {/* Main Title */}
+      <div className="text-center">
+        <h1 className="text-[220px] font-spline-sans font-bold leading-[190px] tracking-[-8.8px]">
+          VOICES OF STUDENTS
+          {/* creative coding part */}
+        </h1>
       </div>
+
+      {/* Next Button - Floating Right */}
+      <button
+        onClick={onNextPodcast}
+        className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors cursor-pointer z-10 md:w-[52px] md:h-[52px] w-[26px] h-[26px]"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="56"
+          height="52"
+          viewBox="0 0 56 52"
+          fill="none"
+        >
+          <line
+            x1="51"
+            y1="4.00002"
+            x2="51"
+            y2="48"
+            stroke="black"
+            strokeWidth="10"
+          />
+          <path d="M52 26L13 48.5167L13 3.48335L52 26Z" fill="black" />
+        </svg>
+      </button>
     </div>
   );
 };

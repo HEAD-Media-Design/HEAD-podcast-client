@@ -6,51 +6,58 @@ import { useEffect, useRef, useState } from "react";
 import EmptyState from "./components/EmptyState";
 import ErrorMessage from "./components/ErrorMessage";
 import Header from "./components/Header";
+import InfoModal from "./components/InfoModal";
 // Import components
 import LoadingSpinner from "./components/LoadingSpinner";
-import { Podcast } from "./types/podcast";
 import PodcastControls from "./components/PodcastControls";
 import PodcastMainContent from "./components/PodcastMainContent";
-import axios from "axios";
+import { usePodcasts } from "./hooks/usePodcasts";
 
 function App() {
-  const STRAPI_URL = import.meta.env.VITE_STRAPI_URL;
-  const [podcasts, setPodcasts] = useState<Podcast[]>([]);
+  const { podcasts, error, isLoading, refetch } = usePodcasts();
+
   const [currentPodcastIndex, setCurrentPodcastIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [animationStage, setAnimationStage] = useState<
+    "initial" | "center" | "final"
+  >("initial");
 
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
 
-  const getPodcasts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get(`${STRAPI_URL}/api/podcasts?populate=*`);
-      console.log(response.data.data);
-      setPodcasts(response.data.data);
-    } catch (err) {
-      console.error("Error fetching podcasts:", err);
-      setError("Failed to load podcasts. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Opening animation sequence - runs on every refresh
   useEffect(() => {
-    getPodcasts();
+    // Stage 1: Show centered (after mount)
+    const centerTimer = setTimeout(() => {
+      setAnimationStage("center");
+    }, 100);
+
+    // Stage 2: Animate to final positions
+    const finalTimer = setTimeout(() => {
+      setAnimationStage("final");
+    }, 1500);
+
+    return () => {
+      clearTimeout(centerTimer);
+      clearTimeout(finalTimer);
+    };
   }, []);
 
   const nextPodcast = () => {
+    if (!podcasts) return;
+    setIsPlaying(false);
+    setCurrentTime(0);
     setCurrentPodcastIndex((prev) =>
       prev === podcasts.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevPodcast = () => {
+    if (!podcasts) return;
+    setIsPlaying(false);
+    setCurrentTime(0);
     setCurrentPodcastIndex((prev) =>
       prev === 0 ? podcasts.length - 1 : prev - 1
     );
@@ -80,22 +87,27 @@ function App() {
     setCurrentTime(0);
   };
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 
   if (error) {
-    return <ErrorMessage error={error} onRetry={getPodcasts} />;
+    return (
+      <ErrorMessage
+        error="Failed to load podcasts. Please try again later."
+        onRetry={() => refetch()}
+      />
+    );
   }
 
-  const currentPodcast = podcasts[currentPodcastIndex];
+  const currentPodcast = podcasts?.[currentPodcastIndex];
 
   if (!currentPodcast) {
     return <EmptyState />;
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="h-screen flex flex-col bg-white overflow-hidden">
       {/* Audio Player */}
       <AudioPlayer
         ref={audioPlayerRef}
@@ -105,23 +117,55 @@ function App() {
         onEnded={handleEnded}
       />
 
-      {/* Header */}
-      <Header />
+      {/* Header - animates from center to top */}
+      <div
+        className={`z-20 transition-transform duration-1000 ease-out ${
+          animationStage === "initial"
+            ? "opacity-0"
+            : animationStage === "center"
+            ? "translate-y-[calc(50vh-65px)] md:translate-y-[calc(50vh-150px)]"
+            : "translate-y-0"
+        }`}
+      >
+        <Header
+          onInfoClick={() => setIsInfoOpen(!isInfoOpen)}
+          isInfoOpen={isInfoOpen}
+        />
+      </div>
 
-      {/* Main Content */}
-      <PodcastMainContent
-        onPrevPodcast={prevPodcast}
-        onNextPodcast={nextPodcast}
-      />
+      <div className="relative flex-1 flex flex-col h-full overflow-hidden">
+        {/* Main Content - hidden during animation */}
+        <div
+          className={`flex-1 transition-opacity duration-500 ${
+            animationStage === "final" ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <PodcastMainContent
+            onPrevPodcast={prevPodcast}
+            onNextPodcast={nextPodcast}
+          />
+        </div>
 
-      {/* Controls */}
-      <PodcastControls
-        podcast={currentPodcast}
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={duration}
-        onTogglePlay={togglePlay}
-      />
+        {/* Controls - animates from center to bottom */}
+        <div
+          className={`z-20 transition-transform duration-1000 ease-out ${
+            animationStage === "initial"
+              ? "opacity-0"
+              : animationStage === "center"
+              ? "-translate-y-[calc(50vh-65px)] md:-translate-y-[calc(50vh-150px)]"
+              : "translate-y-0"
+          }`}
+        >
+          <PodcastControls
+            podcast={currentPodcast}
+            isPlaying={isPlaying}
+            currentTime={currentTime}
+            duration={duration}
+            onTogglePlay={togglePlay}
+          />
+        </div>
+        {isInfoOpen && <InfoModal />}
+      </div>
     </div>
   );
 }
