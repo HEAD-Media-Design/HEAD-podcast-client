@@ -1,9 +1,4 @@
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 interface AudioPlayerProps {
   audioUrl: string;

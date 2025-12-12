@@ -41,5 +41,5 @@ export interface Podcast {
   author: Author;
   category: Category;
   audio: Audio;
-  cover: any;
+  cover: Cover;
 }
