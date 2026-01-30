@@ -7,8 +7,8 @@ import EmptyState from "./components/EmptyState";
 import ErrorMessage from "./components/ErrorMessage";
 import Header from "./components/Header";
 import InfoModal from "./components/InfoModal";
-// Import components
 import LoadingSpinner from "./components/LoadingSpinner";
+import PlaylistSidebar from "./components/PlaylistSidebar";
 import PodcastControls from "./components/PodcastControls";
 import PodcastMainContent from "./components/PodcastMainContent";
 import { usePodcasts } from "./hooks/usePodcasts";
@@ -21,6 +21,7 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [animationStage, setAnimationStage] = useState<
     "initial" | "center" | "final"
   >("initial");
@@ -50,7 +51,7 @@ function App() {
     setIsPlaying(false);
     setCurrentTime(0);
     setCurrentPodcastIndex((prev) =>
-      prev === podcasts.length - 1 ? 0 : prev + 1
+      prev === podcasts.length - 1 ? 0 : prev + 1,
     );
   };
 
@@ -59,7 +60,7 @@ function App() {
     setIsPlaying(false);
     setCurrentTime(0);
     setCurrentPodcastIndex((prev) =>
-      prev === 0 ? podcasts.length - 1 : prev - 1
+      prev === 0 ? podcasts.length - 1 : prev - 1,
     );
   };
 
@@ -86,6 +87,13 @@ function App() {
     setIsPlaying(false);
     setCurrentTime(0);
   };
+
+  // Auto-play when a podcast is selected from the sidebar (isPlaying is set to true
+  useEffect(() => {
+    if (isPlaying) {
+      audioPlayerRef.current?.play();
+    }
+  }, [isPlaying, currentPodcastIndex]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -119,12 +127,12 @@ function App() {
 
       {/* Header - animates from center to top */}
       <div
-        className={`z-20 transition-transform duration-1000 ease-out ${
+        className={`z-20 transition-transform duration-1000 ease-out bg-white ${
           animationStage === "initial"
             ? "opacity-0"
             : animationStage === "center"
-            ? "translate-y-[calc(50vh-65px)] md:translate-y-[calc(50vh-150px)]"
-            : "translate-y-0"
+              ? "translate-y-[calc(50vh-65px)] md:translate-y-[calc(50vh-150px)]"
+              : "translate-y-0"
         }`}
       >
         <Header
@@ -152,8 +160,8 @@ function App() {
             animationStage === "initial"
               ? "opacity-0"
               : animationStage === "center"
-              ? "-translate-y-[calc(50vh-65px)] md:-translate-y-[calc(50vh-150px)]"
-              : "translate-y-0"
+                ? "-translate-y-[calc(50vh-65px)] md:-translate-y-[calc(50vh-150px)]"
+                : "translate-y-0"
           }`}
         >
           <PodcastControls
@@ -162,9 +170,23 @@ function App() {
             currentTime={currentTime}
             duration={duration}
             onTogglePlay={togglePlay}
+            onListClick={() => setIsPlaylistOpen(true)}
           />
         </div>
         {isInfoOpen && <InfoModal />}
+        <PlaylistSidebar
+          isOpen={isPlaylistOpen}
+          onClose={() => setIsPlaylistOpen(false)}
+          podcasts={podcasts}
+          currentPodcastIndex={currentPodcastIndex}
+          isPlaying={isPlaying}
+          onTogglePlay={togglePlay}
+          onSelectPodcast={(index: number) => {
+            setCurrentPodcastIndex(index);
+            setCurrentTime(0);
+            setIsPlaying(true);
+          }}
+        />
       </div>
     </div>
   );

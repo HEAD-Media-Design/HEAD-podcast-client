@@ -7,6 +7,7 @@ interface PodcastControlsProps {
   currentTime: number;
   duration: number;
   onTogglePlay: () => void;
+  onListClick?: () => void;
 }
 
 const PodcastControls: React.FC<PodcastControlsProps> = ({
@@ -15,6 +16,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
   currentTime,
   duration,
   onTogglePlay,
+  onListClick,
 }) => {
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -72,7 +74,12 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
       <div className="flex flex-col items-end absolute right-4 md:right-6 -top-[120px] md:top-0 md:-translate-y-1/2 z-10">
         <div className="flex flex-col md:flex-row items-center gap-2 md:gap-[17px]">
           {/* List Button */}
-          <button className="w-[48px] h-[48px] md:w-[88px] md:h-[88px] rounded-full border-[3px] md:border-5 border-black bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer">
+          <button
+            type="button"
+            onClick={onListClick}
+            className="w-[48px] h-[48px] md:w-[88px] md:h-[88px] rounded-full border-[3px] md:border-5 border-black bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer"
+            aria-label="Open playlist"
+          >
             <svg
               className="w-4 h-4 md:w-8 md:h-7"
               viewBox="0 0 32 28"
