@@ -6,9 +6,9 @@ interface AudioPlayerProps {
   onTimeUpdate: (time: number) => void;
   onLoadedMetadata: (duration: number) => void;
   onEnded: () => void;
-  /** Called before play() when auto-playing after url change. Ensures AudioContext is resumed. */
+  /** Called when load or play fails (e.g. NotSupportedError, CORS, unsupported format). */
+  onError?: (error: unknown) => void;
   onResumeBeforePlay?: () => Promise<void>;
-  /** Called when the audio element is mounted or url changes. Use for analyser, etc. */
   onAudioElementReady?: (element: HTMLAudioElement | null) => void;
 }
 
@@ -28,6 +28,7 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
       onTimeUpdate,
       onLoadedMetadata,
       onEnded,
+      onError,
       onResumeBeforePlay,
       onAudioElementReady,
     },
@@ -50,8 +51,22 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
 
     const handleCanPlay = async () => {
       if (!isPlayingRef.current || !audioRef.current) return;
-      await onResumeBeforePlay?.();
-      await audioRef.current.play();
+      try {
+        await onResumeBeforePlay?.();
+        await audioRef.current.play();
+      } catch (err) {
+        onError?.(err);
+      }
+    };
+
+    const handleError = () => {
+      const el = audioRef.current;
+      const message =
+        el?.error?.message ??
+        (el?.error?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
+          ? "Unsupported source or format"
+          : "Failed to load audio");
+      onError?.(new Error(message));
     };
 
     const handleTimeUpdate = () => {
@@ -71,7 +86,11 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
     };
 
     useImperativeHandle(ref, () => ({
-      play: () => audioRef.current?.play(),
+      play: () => {
+        const p = audioRef.current?.play();
+        if (p?.catch) p.catch((err: unknown) => onError?.(err));
+        return p;
+      },
       pause: () => audioRef.current?.pause(),
       seekTo: (time: number) => {
         if (audioRef.current) {
@@ -93,6 +112,7 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
+        onError={handleError}
         preload="metadata"
       />
     );

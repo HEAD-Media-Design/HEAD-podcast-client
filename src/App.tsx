@@ -30,6 +30,7 @@ function App() {
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
     null,
   );
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
   const {
@@ -134,6 +135,18 @@ function App() {
     setShowNextPrompt(true);
   };
 
+  const handleAudioError = (error: unknown) => {
+    setIsPlaying(false);
+    setAudioError(
+      error instanceof Error ? error.message : "Could not load or play audio",
+    );
+  };
+
+  // Clear audio error when switching podcast
+  useEffect(() => {
+    setAudioError(null);
+  }, [currentPodcastIndex]);
+
   // Auto-play after next/prev/sidebar: play() is triggered by AudioPlayer's onCanPlay when source is ready
 
   if (isLoading) {
@@ -169,6 +182,7 @@ function App() {
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
+        onError={handleAudioError}
         onResumeBeforePlay={resumeAudioContext}
         onAudioElementReady={setAudioElement}
       />
@@ -229,6 +243,8 @@ function App() {
             onTogglePlay={togglePlay}
             onListClick={() => setIsPlaylistOpen(true)}
             onSeek={handleSeek}
+            audioError={audioError}
+            onDismissAudioError={() => setAudioError(null)}
           />
         </div>
         {isInfoOpen && <InfoModal />}

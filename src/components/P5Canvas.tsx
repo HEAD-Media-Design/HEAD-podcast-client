@@ -42,6 +42,9 @@ function P5Canvas<T>({ sketch, props, className }: P5CanvasProps<T>) {
       if (w > 0 && h > 0) p5Instance?.resizeCanvas(w, h);
     });
     resizeObserver.observe(container);
+    const w = container.offsetWidth;
+    const h = container.offsetHeight;
+    if (w > 0 && h > 0) p5Instance.resizeCanvas(w, h);
 
     return () => {
       resizeObserver?.disconnect();

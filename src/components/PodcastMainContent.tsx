@@ -72,7 +72,7 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col md:flex-row h-full overflow-hidden relative">
-      <div className="flex-shrink-0 w-full md:w-[50%] bg-[#E53935] relative flex items-center justify-center md:h-full h-1/2 overflow-hidden">
+      <div className="flex-shrink-0 w-full md:w-[50%] bg-[#E53935] relative flex items-center justify-center md:h-full h-1/2 min-h-[240px] overflow-hidden">
         <P5Canvas
           sketch={audioReactiveSketch}
           props={p5Props}

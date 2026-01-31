@@ -9,6 +9,8 @@ interface PodcastControlsProps {
   onTogglePlay: () => void;
   onListClick?: () => void;
   onSeek?: (time: number) => void;
+  audioError?: string | null;
+  onDismissAudioError?: () => void;
 }
 
 const PodcastControls: React.FC<PodcastControlsProps> = ({
@@ -19,6 +21,8 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
   onTogglePlay,
   onListClick,
   onSeek,
+  audioError,
+  onDismissAudioError,
 }) => {
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -66,9 +70,31 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
   );
 
   return (
-    <div
-      className="relative border-t border-black border-t-[3px] md:border-t-[5px] cursor-pointer"
-      onClick={handleProgressClick}
+    <div className="relative">
+      {audioError && (
+        <div
+          className="bg-red-100 text-red-800 px-4 py-2 text-sm flex items-center justify-between gap-2"
+          role="alert"
+        >
+          <span>{audioError}</span>
+          {onDismissAudioError && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismissAudioError();
+              }}
+              className="shrink-0 underline hover:no-underline"
+              aria-label="Dismiss"
+            >
+              Dismiss
+            </button>
+          )}
+        </div>
+      )}
+      <div
+        className="relative border-t border-black border-t-[3px] md:border-t-[5px] cursor-pointer"
+        onClick={handleProgressClick}
       role="progressbar"
       aria-valuenow={duration > 0 ? currentTime : 0}
       aria-valuemin={0}
@@ -150,6 +176,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

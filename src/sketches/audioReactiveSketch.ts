@@ -35,9 +35,11 @@ export const audioReactiveSketch: P5Sketch<AudioReactiveSketchProps> = (
     p.createCanvas(p.windowWidth, p.windowHeight);
     container = (p as unknown as { canvas?: HTMLCanvasElement }).canvas
       ?.parentElement as HTMLDivElement | null;
-    const w = container?.offsetWidth ?? p.width;
-    const h = container?.offsetHeight ?? p.height;
-    if (w > 0 && h > 0) p.resizeCanvas(w, h);
+    const cw = container?.offsetWidth ?? 0;
+    const ch = container?.offsetHeight ?? 0;
+    const w = cw > 0 ? cw : Math.max(400, Math.min(800, p.windowWidth));
+    const h = ch > 0 ? ch : Math.max(240, Math.min(400, p.windowHeight));
+    p.resizeCanvas(w, h);
   };
 
   p.draw = () => {
@@ -104,17 +106,6 @@ export const audioReactiveSketch: P5Sketch<AudioReactiveSketchProps> = (
         p.vertex(x, y);
       }
       p.endShape();
-    } else {
-      p.fill(255);
-      p.noStroke();
-      p.textSize(14);
-      p.textAlign(p.CENTER, p.CENTER);
-      p.text(
-        "Cross-origin audio: waveform only when same origin",
-        p.width / 2,
-        p.height / 2,
-      );
-      p.textAlign(p.LEFT, p.BASELINE);
     }
   };
 
