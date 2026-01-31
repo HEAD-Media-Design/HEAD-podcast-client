@@ -21,6 +21,9 @@
     "swr": "^2.3.7",
     "tailwindcss": "^4.1.4"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.34.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/p5": "^1.7.7",
