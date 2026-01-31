@@ -1,58 +1,64 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { P5Sketch } from "../types/p5Sketch";
 import p5 from "p5";
 
 export interface P5CanvasProps<T> {
-  /**
-   * Your p5 sketch. Receives (p5 instance, getProps).
-   * Call getProps() in draw() to read current props.
-   */
   sketch: P5Sketch<T>;
-  /**
-   * Props passed to the sketch. Read them in the sketch via getProps().
-   */
   props: T;
   className?: string;
 }
 
 /**
- * Reusable p5.js canvas. Mounts your sketch in a div and handles resize/unmount.
- * Swap the `sketch` prop to use your own p5 code.
+ * Mounts p5 sketch in a div. Container readiness is tracked by state so p5
+ * is created/cleaned up in a single useEffect (avoids double canvas from ref callback timing).
  */
 function P5Canvas<T>({ sketch, props, className }: P5CanvasProps<T>) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const propsRef = useRef(props);
+  const p5InstanceRef = useRef<p5 | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const [containerReady, setContainerReady] = useState(false);
   propsRef.current = props;
 
+  const setContainerRef = useCallback((el: HTMLDivElement | null) => {
+    containerRef.current = el;
+    setContainerReady(!!el);
+  }, []);
+
   useEffect(() => {
-    let p5Instance: p5 | null = null;
-    let resizeObserver: ResizeObserver | null = null;
-
-    const container = containerRef.current;
-    if (!container) return;
-
+    if (!containerReady || !containerRef.current) return;
+    const el = containerRef.current;
+    while (el.firstChild) el.removeChild(el.firstChild);
     const getProps = () => propsRef.current;
     const sketchWithProps = (p: p5) => sketch(p, getProps);
-    p5Instance = new p5(sketchWithProps, container);
-
-    resizeObserver = new ResizeObserver(() => {
-      const w = container.offsetWidth;
-      const h = container.offsetHeight;
-      if (w > 0 && h > 0) p5Instance?.resizeCanvas(w, h);
+    let instance: p5;
+    try {
+      instance = new p5(sketchWithProps, el);
+    } catch (err) {
+      console.error("p5 init failed", err);
+      return;
+    }
+    p5InstanceRef.current = instance;
+    const ro = new ResizeObserver(() => {
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      if (w > 0 && h > 0) instance.resizeCanvas(w, h);
     });
-    resizeObserver.observe(container);
-    const w = container.offsetWidth;
-    const h = container.offsetHeight;
-    if (w > 0 && h > 0) p5Instance.resizeCanvas(w, h);
-
+    ro.observe(el);
+    resizeObserverRef.current = ro;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    if (w > 0 && h > 0) instance.resizeCanvas(w, h);
     return () => {
-      resizeObserver?.disconnect();
-      p5Instance?.remove();
+      ro.disconnect();
+      resizeObserverRef.current = null;
+      instance.remove();
+      p5InstanceRef.current = null;
     };
-  }, [sketch]);
+  }, [containerReady, sketch]);
 
-  return <div ref={containerRef} className={className} />;
+  return <div ref={setContainerRef} className={className} />;
 }
 
 export default P5Canvas;
