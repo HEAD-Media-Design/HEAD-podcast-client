@@ -8,6 +8,7 @@ interface PodcastControlsProps {
   duration: number;
   onTogglePlay: () => void;
   onListClick?: () => void;
+  onSeek?: (time: number) => void;
 }
 
 const PodcastControls: React.FC<PodcastControlsProps> = ({
@@ -17,6 +18,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
   duration,
   onTogglePlay,
   onListClick,
+  onSeek,
 }) => {
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -25,6 +27,16 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
   };
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!onSeek || duration <= 0) return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, x / rect.width));
+    const time = percentage * duration;
+    onSeek(time);
+  };
 
   const ContentLayer = ({ isOverlay = false }: { isOverlay?: boolean }) => (
     <div
@@ -39,7 +51,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
         </h4>
         <p
           className={`font-spline-sans-mono text-[14px] md:text-[24px] leading-[20px] md:leading-[38px] tracking-[-0.42px] md:tracking-[-0.72px] ${
-            isOverlay ? "text-white/70" : "text-black/70"
+            isOverlay ? "text-white" : "text-black"
           }`}
         >
           by {podcast.author?.name || "Unknown"}
@@ -54,7 +66,15 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
   );
 
   return (
-    <div className="relative border-t border-black border-t-[3px] md:border-t-[5px]">
+    <div
+      className="relative border-t border-black border-t-[3px] md:border-t-[5px] cursor-pointer"
+      onClick={handleProgressClick}
+      role="progressbar"
+      aria-valuenow={duration > 0 ? currentTime : 0}
+      aria-valuemin={0}
+      aria-valuemax={duration}
+      aria-label="Audio progress"
+    >
       {/* Base Layer: White background, black text */}
       <div className="relative bg-white">
         <ContentLayer />
@@ -76,7 +96,10 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
           {/* List Button */}
           <button
             type="button"
-            onClick={onListClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              onListClick?.();
+            }}
             className="w-[48px] h-[48px] md:w-[88px] md:h-[88px] rounded-full border-[3px] md:border-5 border-black bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer"
             aria-label="Open playlist"
           >
@@ -97,7 +120,11 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
 
           {/* Play/Pause Button */}
           <button
-            onClick={onTogglePlay}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePlay();
+            }}
             className="w-[48px] h-[48px] md:w-[88px] md:h-[88px] rounded-full border-[3px] md:border-5 border-black bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer"
           >
             {isPlaying ? (

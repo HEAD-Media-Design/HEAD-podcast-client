@@ -122,6 +122,55 @@ button {
   transition: width 0.3s ease;
 }
 
+/* Transcript panel: outer = scroll container (fills height), inner = grid (content height). */
+.transcript-panel {
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  height: 100%;
+}
+.transcript-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto;
+  grid-template-areas: "title" "transcript" "meta";
+  min-height: min-content;
+}
+@media (min-width: 768px) {
+  .transcript-panel-grid {
+    grid-template-columns: 35% 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas: "title transcript" "meta transcript";
+  }
+}
+.transcript-panel-title {
+  grid-area: title;
+}
+.transcript-panel-transcript {
+  grid-area: transcript;
+}
+.transcript-panel-meta {
+  grid-area: meta;
+}
+
+/* Transcript panel: transparent scrollbar track */
+.transcript-panel {
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+.transcript-panel::-webkit-scrollbar {
+  width: 8px;
+}
+.transcript-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.transcript-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+.transcript-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
 /* Playlist sidebar: transparent scrollbar track */
 .playlist-sidebar-scroll {
   scrollbar-color: rgba(0, 0, 0, 0.3) transparent;

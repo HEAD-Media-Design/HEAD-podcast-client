@@ -10,6 +10,7 @@ interface AudioPlayerProps {
 export interface AudioPlayerRef {
   play: () => Promise<void> | undefined;
   pause: () => void;
+  seekTo: (time: number) => void;
   currentTime: number;
   duration: number;
 }
@@ -44,8 +45,17 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
     useImperativeHandle(ref, () => ({
       play: () => audioRef.current?.play(),
       pause: () => audioRef.current?.pause(),
-      currentTime: audioRef.current?.currentTime || 0,
-      duration: audioRef.current?.duration || 0,
+      seekTo: (time: number) => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = time;
+        }
+      },
+      get currentTime() {
+        return audioRef.current?.currentTime ?? 0;
+      },
+      get duration() {
+        return audioRef.current?.duration ?? 0;
+      },
     }));
 
     return (
@@ -57,7 +67,7 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
         preload="metadata"
       />
     );
-  }
+  },
 );
 
 AudioPlayer.displayName = "AudioPlayer";

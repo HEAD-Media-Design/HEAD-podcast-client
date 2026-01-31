@@ -1,64 +1,117 @@
+import NextButton from "./NextButton";
+import { Podcast } from "../types/podcast";
+import PrevButton from "./PrevButton";
 import React from "react";
 
 interface PodcastMainContentProps {
+  currentPodcast: Podcast;
+  nextPodcast: Podcast | null;
+  showNextPrompt?: boolean;
   onPrevPodcast: () => void;
   onNextPodcast: () => void;
+  onPlayNext?: () => void;
 }
 
+const DEFAULT_TRANSCRIPT =
+  "Hi folks, welcome to Supernova, where we discuss algorithms beyond us. I'm your host Peter Ha and I'll be talking about mobile photography and how we select and manage photos.";
+
 const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
+  currentPodcast,
+  nextPodcast,
+  showNextPrompt = false,
   onPrevPodcast,
   onNextPodcast,
+  onPlayNext,
 }) => {
+  const transcript =
+    currentPodcast.transcript ||
+    currentPodcast.description ||
+    DEFAULT_TRANSCRIPT;
+  const year =
+    typeof currentPodcast.category?.name === "string"
+      ? currentPodcast.category?.name.split("_")[1]
+      : "2024";
+
   return (
-    <div className="flex-1 relative flex items-center justify-center p-6 pb-[120px] md:pb-6 h-full">
-      {/* Previous Button - Floating Left */}
-      <button
-        onClick={onPrevPodcast}
-        className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors cursor-pointer z-10 md:w-[52px] md:h-[52px] w-[26px] h-[26px]"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="56"
-          height="52"
-          viewBox="0 0 56 52"
-          fill="none"
-        >
-          <line x1="5" y1="48" x2="5" y2="4" stroke="black" strokeWidth="10" />
-          <path d="M4 26L43 3.48333L43 48.5167L4 26Z" fill="black" />
-        </svg>
-      </button>
-
-      {/* Main Title */}
-      <div className="text-center">
-        <h1 className="text-[220px] font-spline-sans font-bold leading-[190px] tracking-[-8.8px]">
-          VOICES OF STUDENTS
-          {/* creative coding part */}
-        </h1>
+    <div className="flex-1 min-h-0 flex flex-col md:flex-row h-full overflow-hidden relative">
+      <div className="flex-shrink-0 w-full md:w-[50%] bg-[#E53935] relative flex items-center justify-center md:h-full h-1/2 overflow-hidden">
+        {/* Audio interactive p5.js canvas*/}
       </div>
-
-      {/* Next Button - Floating Right */}
-      <button
+      <PrevButton
+        onClick={onPrevPodcast}
+        className="absolute left-4 top-1/2 -translate-y-1/2"
+      />
+      <NextButton
         onClick={onNextPodcast}
-        className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors cursor-pointer z-10 md:w-[52px] md:h-[52px] w-[26px] h-[26px]"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="56"
-          height="52"
-          viewBox="0 0 56 52"
-          fill="none"
-        >
-          <line
-            x1="51"
-            y1="4.00002"
-            x2="51"
-            y2="48"
-            stroke="black"
-            strokeWidth="10"
-          />
-          <path d="M52 26L13 48.5167L13 3.48335L52 26Z" fill="black" />
-        </svg>
-      </button>
+        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2"
+      />
+
+      {/* Right panel: Transcript (yellow) - fills height, scrolls when content overflows */}
+      <div className="flex-1 min-h-0 h-full transcript-panel bg-[#FACC15] md:min-w-0 px-4 md:px-0 text-left relative py-6 px-14">
+        <div className="transcript-panel-grid px-0">
+          {/* Title */}
+          <div className="transcript-panel-title px-2 md:px-6 md:py-10 md:pr-4 pb-6">
+            <h2 className="font-spline-sans-mono font-bold text-black text-2xl md:text-3xl">
+              Transcript
+            </h2>
+          </div>
+
+          {/* Transcript text - one copy */}
+          <div className="transcript-panel-transcript min-h-0 px-2 md:px-8 md:pl-6 md:py-10">
+            <p className="font-spline-sans text-black text-sm md:text-base whitespace-pre-wrap pr-8 md:pr-14">
+              {transcript}
+            </p>
+          </div>
+
+          {/* Metadata + Next Podcast - one copy */}
+          <div className="transcript-panel-meta px-2 md:px-6 md:pr-4 md:pb-8 pt-6">
+            <p className="font-spline-sans font-bold text-black text-sm md:text-base mb-6 md:mb-10">
+              Completed in Master Media Design Theory Seminar {year}
+            </p>
+            <div className="mb-4 md:mb-6">
+              <p className="font-spline-sans font-bold text-black text-xs uppercase tracking-wide mb-1 md:mb-2">
+                ABOUT
+              </p>
+              <p className="font-spline-sans text-black text-sm leading-tight">
+                {currentPodcast.description}
+              </p>
+            </div>
+            <div className="mb-8 md:mb-0">
+              <p className="font-spline-sans font-bold text-black text-xs uppercase tracking-wide mb-1 md:mb-2">
+                TEACHER
+              </p>
+              <p className="font-spline-sans text-black text-sm">
+                Nicolas Nova
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Next Podcast: centered overlay on yellow panel, focus when showNextPrompt */}
+        {nextPodcast && showNextPrompt && (
+          <div
+            tabIndex={-1}
+            className="absolute inset-0 bg-[#FACC15] flex items-center justify-center px-4 md:px-6 outline-none"
+            aria-label="Next podcast"
+          >
+            <div className="min-w-0 max-w-md w-full">
+              <h3 className="font-spline-sans-mono font-bold text-black text-lg mb-4">
+                {nextPodcast.title}
+              </h3>
+              <p className="font-spline-sans text-black text-sm line-clamp-2 mb-4">
+                {nextPodcast.description}
+              </p>
+              <button
+                type="button"
+                onClick={onPlayNext}
+                className="font-spline-sans-mono font-bold text-black text-lg cursor-pointer hover:underline"
+              >
+                Play
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

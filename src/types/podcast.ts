@@ -42,4 +42,5 @@ export interface Podcast {
   category: Category;
   audio: Audio;
   cover: Cover;
+  transcript?: string;
 }

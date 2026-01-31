@@ -22,6 +22,7 @@ function App() {
   const [duration, setDuration] = useState(0);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
+  const [showNextPrompt, setShowNextPrompt] = useState(false);
   const [animationStage, setAnimationStage] = useState<
     "initial" | "center" | "final"
   >("initial");
@@ -48,20 +49,32 @@ function App() {
 
   const nextPodcast = () => {
     if (!podcasts) return;
-    setIsPlaying(false);
+    setShowNextPrompt(false);
     setCurrentTime(0);
     setCurrentPodcastIndex((prev) =>
       prev === podcasts.length - 1 ? 0 : prev + 1,
     );
+    setIsPlaying(true);
   };
 
   const prevPodcast = () => {
     if (!podcasts) return;
-    setIsPlaying(false);
+    setShowNextPrompt(false);
     setCurrentTime(0);
     setCurrentPodcastIndex((prev) =>
       prev === 0 ? podcasts.length - 1 : prev - 1,
     );
+    setIsPlaying(true);
+  };
+
+  const playNextPodcast = () => {
+    if (!podcasts) return;
+    setShowNextPrompt(false);
+    setCurrentTime(0);
+    setCurrentPodcastIndex((prev) =>
+      prev === podcasts.length - 1 ? 0 : prev + 1,
+    );
+    setIsPlaying(true);
   };
 
   const togglePlay = () => {
@@ -69,6 +82,7 @@ function App() {
       if (isPlaying) {
         audioPlayerRef.current.pause();
       } else {
+        setShowNextPrompt(false);
         audioPlayerRef.current.play();
       }
       setIsPlaying(!isPlaying);
@@ -79,6 +93,11 @@ function App() {
     setCurrentTime(time);
   };
 
+  const handleSeek = (time: number) => {
+    audioPlayerRef.current?.seekTo(time);
+    setCurrentTime(time);
+  };
+
   const handleLoadedMetadata = (audioDuration: number) => {
     setDuration(audioDuration);
   };
@@ -86,6 +105,7 @@ function App() {
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
+    setShowNextPrompt(true);
   };
 
   // Auto-play when a podcast is selected from the sidebar (isPlaying is set to true
@@ -109,6 +129,11 @@ function App() {
   }
 
   const currentPodcast = podcasts?.[currentPodcastIndex];
+  const nextPodcastItem =
+    podcasts?.length &&
+    (currentPodcastIndex < podcasts.length - 1 || podcasts.length > 1)
+      ? podcasts[(currentPodcastIndex + 1) % podcasts.length]
+      : null;
 
   if (!currentPodcast) {
     return <EmptyState />;
@@ -144,13 +169,17 @@ function App() {
       <div className="relative flex-1 flex flex-col h-full overflow-hidden">
         {/* Main Content - hidden during animation */}
         <div
-          className={`flex-1 transition-opacity duration-500 ${
+          className={`flex-1 min-h-0 transition-opacity duration-500 ${
             animationStage === "final" ? "opacity-100" : "opacity-0"
           }`}
         >
           <PodcastMainContent
+            currentPodcast={currentPodcast}
+            nextPodcast={nextPodcastItem ?? null}
+            showNextPrompt={showNextPrompt}
             onPrevPodcast={prevPodcast}
             onNextPodcast={nextPodcast}
+            onPlayNext={playNextPodcast}
           />
         </div>
 
@@ -171,6 +200,7 @@ function App() {
             duration={duration}
             onTogglePlay={togglePlay}
             onListClick={() => setIsPlaylistOpen(true)}
+            onSeek={handleSeek}
           />
         </div>
         {isInfoOpen && <InfoModal />}
@@ -182,6 +212,7 @@ function App() {
           isPlaying={isPlaying}
           onTogglePlay={togglePlay}
           onSelectPodcast={(index: number) => {
+            setShowNextPrompt(false);
             setCurrentPodcastIndex(index);
             setCurrentTime(0);
             setIsPlaying(true);
