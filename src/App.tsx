@@ -8,9 +8,10 @@ import ErrorMessage from "./components/ErrorMessage";
 import Header from "./components/Header";
 import InfoModal from "./components/InfoModal";
 import LoadingSpinner from "./components/LoadingSpinner";
-import PlaylistSidebar from "./components/PlaylistSidebar";
+import PlaylistSidebar from "./components/PlaylistSidebar.tsx";
 import PodcastControls from "./components/PodcastControls";
 import PodcastMainContent from "./components/PodcastMainContent";
+import { useAudioLevel } from "./hooks/useAudioLevel";
 import { usePodcasts } from "./hooks/usePodcasts";
 
 function App() {
@@ -26,8 +27,31 @@ function App() {
   const [animationStage, setAnimationStage] = useState<
     "initial" | "center" | "final"
   >("initial");
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
+    null,
+  );
 
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
+  const {
+    analyserRef,
+    resume: resumeAudioContext,
+    isConnected,
+    outputLatency,
+  } = useAudioLevel(audioElement);
+  const simulatedLevelRef = useRef(0);
+
+  useEffect(() => {
+    if (isConnected || !isPlaying) return;
+    let raf = 0;
+    const update = () => {
+      const t = Date.now() / 400;
+      simulatedLevelRef.current =
+        0.35 + 0.3 * Math.sin(t) + 0.1 * Math.sin(t * 2.3);
+      raf = requestAnimationFrame(update);
+    };
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, [isConnected, isPlaying]);
 
   // Opening animation sequence - runs on every refresh
   useEffect(() => {
@@ -77,15 +101,17 @@ function App() {
     setIsPlaying(true);
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (audioPlayerRef.current) {
       if (isPlaying) {
         audioPlayerRef.current.pause();
+        setIsPlaying(false);
       } else {
         setShowNextPrompt(false);
-        audioPlayerRef.current.play();
+        await resumeAudioContext();
+        await audioPlayerRef.current.play();
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -108,12 +134,7 @@ function App() {
     setShowNextPrompt(true);
   };
 
-  // Auto-play when a podcast is selected from the sidebar (isPlaying is set to true
-  useEffect(() => {
-    if (isPlaying) {
-      audioPlayerRef.current?.play();
-    }
-  }, [isPlaying, currentPodcastIndex]);
+  // Auto-play after next/prev/sidebar: play() is triggered by AudioPlayer's onCanPlay when source is ready
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -141,15 +162,16 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden">
-      {/* Audio Player */}
       <AudioPlayer
         ref={audioPlayerRef}
         audioUrl={currentPodcast.audio?.url || ""}
+        isPlaying={isPlaying}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
+        onResumeBeforePlay={resumeAudioContext}
+        onAudioElementReady={setAudioElement}
       />
-
       {/* Header - animates from center to top */}
       <div
         className={`z-20 transition-transform duration-1000 ease-out bg-white ${
@@ -180,6 +202,12 @@ function App() {
             onPrevPodcast={prevPodcast}
             onNextPodcast={nextPodcast}
             onPlayNext={playNextPodcast}
+            analyserRef={analyserRef}
+            simulatedLevelRef={simulatedLevelRef}
+            isConnected={isConnected}
+            isPlaying={isPlaying}
+            currentTime={currentTime}
+            outputLatency={outputLatency}
           />
         </div>
 

@@ -1,7 +1,10 @@
+import React, { useMemo } from "react";
+
 import NextButton from "./NextButton";
+import P5Canvas from "./P5Canvas";
 import { Podcast } from "../types/podcast";
 import PrevButton from "./PrevButton";
-import React from "react";
+import { audioReactiveSketch } from "../sketches/audioReactiveSketch";
 
 interface PodcastMainContentProps {
   currentPodcast: Podcast;
@@ -10,6 +13,12 @@ interface PodcastMainContentProps {
   onPrevPodcast: () => void;
   onNextPodcast: () => void;
   onPlayNext?: () => void;
+  analyserRef: React.MutableRefObject<AnalyserNode | null>;
+  simulatedLevelRef: React.MutableRefObject<number>;
+  isConnected: boolean;
+  isPlaying: boolean;
+  currentTime: number;
+  outputLatency: number;
 }
 
 const DEFAULT_TRANSCRIPT =
@@ -22,6 +31,12 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   onPrevPodcast,
   onNextPodcast,
   onPlayNext,
+  analyserRef,
+  simulatedLevelRef,
+  isConnected,
+  isPlaying,
+  currentTime,
+  outputLatency,
 }) => {
   const transcript =
     currentPodcast.transcript ||
@@ -32,10 +47,37 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
       ? currentPodcast.category?.name.split("_")[1]
       : "2024";
 
+  const p5Props = useMemo(
+    () => ({
+      get analyser(): AnalyserNode | null {
+        return analyserRef.current;
+      },
+      get simulatedLevel(): number {
+        return simulatedLevelRef.current;
+      },
+      isConnected,
+      isPlaying,
+      currentTime,
+      outputLatency,
+    }),
+    [
+      isConnected,
+      isPlaying,
+      currentTime,
+      outputLatency,
+      analyserRef,
+      simulatedLevelRef,
+    ],
+  );
+
   return (
     <div className="flex-1 min-h-0 flex flex-col md:flex-row h-full overflow-hidden relative">
       <div className="flex-shrink-0 w-full md:w-[50%] bg-[#E53935] relative flex items-center justify-center md:h-full h-1/2 overflow-hidden">
-        {/* Audio interactive p5.js canvas*/}
+        <P5Canvas
+          sketch={audioReactiveSketch}
+          props={p5Props}
+          className="w-full h-full"
+        />
       </div>
       <PrevButton
         onClick={onPrevPodcast}

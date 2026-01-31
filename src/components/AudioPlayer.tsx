@@ -2,9 +2,14 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 interface AudioPlayerProps {
   audioUrl: string;
+  isPlaying: boolean;
   onTimeUpdate: (time: number) => void;
   onLoadedMetadata: (duration: number) => void;
   onEnded: () => void;
+  /** Called before play() when auto-playing after url change. Ensures AudioContext is resumed. */
+  onResumeBeforePlay?: () => Promise<void>;
+  /** Called when the audio element is mounted or url changes. Use for analyser, etc. */
+  onAudioElementReady?: (element: HTMLAudioElement | null) => void;
 }
 
 export interface AudioPlayerRef {
@@ -16,8 +21,21 @@ export interface AudioPlayerRef {
 }
 
 const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
-  ({ audioUrl, onTimeUpdate, onLoadedMetadata, onEnded }, ref) => {
+  (
+    {
+      audioUrl,
+      isPlaying,
+      onTimeUpdate,
+      onLoadedMetadata,
+      onEnded,
+      onResumeBeforePlay,
+      onAudioElementReady,
+    },
+    ref,
+  ) => {
     const audioRef = useRef<HTMLAudioElement>(null);
+    const isPlayingRef = useRef(isPlaying);
+    isPlayingRef.current = isPlaying;
 
     useEffect(() => {
       if (audioRef.current) {
@@ -25,6 +43,16 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
         audioRef.current.load();
       }
     }, [audioUrl]);
+
+    useEffect(() => {
+      onAudioElementReady?.(audioRef.current ?? null);
+    }, [audioUrl, onAudioElementReady]);
+
+    const handleCanPlay = async () => {
+      if (!isPlayingRef.current || !audioRef.current) return;
+      await onResumeBeforePlay?.();
+      await audioRef.current.play();
+    };
 
     const handleTimeUpdate = () => {
       if (audioRef.current) {
@@ -61,6 +89,7 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
     return (
       <audio
         ref={audioRef}
+        onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
