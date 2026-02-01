@@ -27,19 +27,25 @@ function InfoModal() {
                   → HEAD-Genève
                 </a>
                 <a
-                  href="#"
+                  href="https://head-publishing.ch/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="no-underline hover:underline focus:outline-none"
                 >
                   → HEAD-Publishing
                 </a>
                 <a
-                  href="#"
+                  href="https://www.hesge.ch/head/issue/en"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="no-underline hover:underline focus:outline-none"
                 >
                   → ISSUE Journal
                 </a>
                 <a
-                  href="#"
+                  href="https://www.sindycat.ch/en/community/overshoot/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="no-underline hover:underline focus:outline-none"
                 >
                   → Overshoot
@@ -105,18 +111,37 @@ function InfoModal() {
         </div>
 
         {/* Footer */}
-        <div className="p-8 font-spline-sans-mono text-[12px] md:text-[16px] leading-[24px] md:leading-[38px] tracking-[-0.32px]">
+        <div className="p-8 font-spline-sans-mono text-[12px] md:text-[16px] leading-[24px] md:leading-[38px] tracking-[-0.32px] text-left">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4">
-            <span>HEAD — Genève Avenue de Châtelaine 5 CH-1203 Genève</span>
+            <span>
+              <span
+                className="md:hidden block mb-6"
+                style={{ lineHeight: 1.2 }}
+              >
+                HEAD — Genève <br /> Avenue de Châtelaine 5 <br /> CH-1203
+                Genève
+              </span>
+              <span className="hidden md:inline">
+                HEAD — Genève Avenue de Châtelaine 5 CH-1203 Genève
+              </span>
+            </span>
             <a
-              href="mailto:contact@head-podcasts.ch"
+              href="https://www.instagram.com/headmediadesign/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="hover:underline"
             >
-              contact@head-podcasts.ch
+              Follow us on Instagram
             </a>
-            <span>
-              © {new Date().getFullYear()} HEAD — Genève, Haute école d'art et
-              de design
+            <span className="text-center md:text-left w-full md:w-auto mt-10 md:mt-0">
+              <span className="md:hidden block" style={{ lineHeight: 1.2 }}>
+                © {new Date().getFullYear()} HEAD — Genève <br /> Haute école
+                d'art et de design
+              </span>
+              <span className="hidden md:inline">
+                © {new Date().getFullYear()} HEAD — Genève, Haute école d'art et
+                de design
+              </span>
             </span>
           </div>
         </div>
