@@ -126,7 +126,7 @@ function InfoModal() {
               </span>
             </span>
             <a
-              href="https://www.instagram.com/headmediadesign/"
+              href="https://www.instagram.com/head_mediadesign/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:underline"
