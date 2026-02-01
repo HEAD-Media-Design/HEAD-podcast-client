@@ -174,7 +174,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden">
+    <div className="h-dvh-fallback flex flex-col bg-white overflow-hidden">
       <AudioPlayer
         ref={audioPlayerRef}
         audioUrl={currentPodcast.audio?.url || ""}

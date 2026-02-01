@@ -94,6 +94,16 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Fill visible viewport on mobile (excludes address bar); fallback to 100vh where dvh unsupported */
+.h-dvh-fallback {
+  height: 100vh;
+}
+@supports (height: 100dvh) {
+  .h-dvh-fallback {
+    height: 100dvh;
+  }
+}
+
 /* Focus styles for accessibility */
 *:focus:not(:focus-visible) {
   outline: none;
