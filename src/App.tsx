@@ -1,6 +1,9 @@
 import "./App.css";
 
 import AudioPlayer, { AudioPlayerRef } from "./components/AudioPlayer";
+import PodcastControls, {
+  PodcastControlButtons,
+} from "./components/PodcastControls";
 import { useEffect, useRef, useState } from "react";
 
 import EmptyState from "./components/EmptyState";
@@ -9,7 +12,6 @@ import Header from "./components/Header";
 import InfoModal from "./components/InfoModal";
 import LoadingSpinner from "./components/LoadingSpinner";
 import PlaylistSidebar from "./components/PlaylistSidebar.tsx";
-import PodcastControls from "./components/PodcastControls";
 import PodcastMainContent from "./components/PodcastMainContent";
 import { useAudioLevel } from "./hooks/useAudioLevel";
 import { usePodcasts } from "./hooks/usePodcasts";
@@ -186,13 +188,13 @@ function App() {
         onResumeBeforePlay={resumeAudioContext}
         onAudioElementReady={setAudioElement}
       />
-      {/* Header - animates from center to top */}
+      {/* Header - animates from center to top; use 50dvh so center matches visible viewport (100dvh) */}
       <div
         className={`z-20 transition-transform duration-1000 ease-out bg-white ${
           animationStage === "initial"
             ? "opacity-0"
             : animationStage === "center"
-              ? "translate-y-[calc(50vh-65px)] md:translate-y-[calc(50vh-150px)]"
+              ? "translate-y-[calc(50dvh-65px)] md:translate-y-[calc(50dvh-150px)]"
               : "translate-y-0"
         }`}
       >
@@ -225,27 +227,39 @@ function App() {
           />
         </div>
 
-        {/* Controls - animates from center to bottom */}
-        <div
-          className={`z-20 transition-transform duration-1000 ease-out ${
-            animationStage === "initial"
-              ? "opacity-0"
-              : animationStage === "center"
-                ? "-translate-y-[calc(50vh-65px)] md:-translate-y-[calc(50vh-150px)]"
-                : "translate-y-0"
-          }`}
-        >
-          <PodcastControls
-            podcast={currentPodcast}
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-            duration={duration}
-            onTogglePlay={togglePlay}
-            onListClick={() => setIsPlaylistOpen(true)}
-            onSeek={handleSeek}
-            audioError={audioError}
-            onDismissAudioError={() => setAudioError(null)}
-          />
+        {/* Controls: fixed buttons (no animation) + bar (animates from center to bottom) */}
+        <div className="relative z-20">
+          {/* List + Play buttons – centered on the audio bar’s top line (straddling the black line) */}
+          <div className="absolute right-4 md:right-6 top-0 -translate-y-[calc(50%+4rem)] md:-translate-y-1/2 z-10">
+            <PodcastControlButtons
+              isPlaying={isPlaying}
+              onTogglePlay={togglePlay}
+              onListClick={() => setIsPlaylistOpen(true)}
+            />
+          </div>
+          {/* Progress bar + title – animates from center to bottom; use 50dvh so center matches visible viewport (100dvh) */}
+          <div
+            className={`transition-transform duration-1000 ease-out ${
+              animationStage === "initial"
+                ? "opacity-0"
+                : animationStage === "center"
+                  ? "-translate-y-[calc(50dvh-65px)] md:-translate-y-[calc(50dvh-150px)]"
+                  : "translate-y-0"
+            }`}
+          >
+            <PodcastControls
+              podcast={currentPodcast}
+              isPlaying={isPlaying}
+              currentTime={currentTime}
+              duration={duration}
+              onTogglePlay={togglePlay}
+              onListClick={() => setIsPlaylistOpen(true)}
+              onSeek={handleSeek}
+              audioError={audioError}
+              onDismissAudioError={() => setAudioError(null)}
+              renderButtonsSeparately
+            />
+          </div>
         </div>
         {isInfoOpen && <InfoModal />}
         <PlaylistSidebar
