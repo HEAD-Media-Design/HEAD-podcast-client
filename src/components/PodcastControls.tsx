@@ -115,13 +115,13 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
 
   const ContentLayer = ({ isOverlay = false }: { isOverlay?: boolean }) => (
     <div
-      className={`flex items-start justify-between px-4 md:px-6 ${
+      className={`flex items-start justify-between pl-2 pr-4 md:px-6 ${
         isOverlay ? "text-white" : "text-black"
       }`}
     >
-      {/* Left: Title & Author */}
-      <div className="flex-shrink-0 p-2 md:p-[16px] text-left">
-        <h4 className="font-spline-sans-mono text-[20px] md:text-[42px] font-medium leading-[24px] md:leading-[38px] tracking-[-0.6px] md:tracking-[-1.26px]">
+      {/* Left: Title & Author – min-w-0 so title can shrink; line-clamp on mobile to avoid cutoff */}
+      <div className="min-w-0 flex-1 pl-1 pr-2 pt-2 pb-2 md:p-[16px] md:flex-initial text-left">
+        <h4 className="font-spline-sans-mono text-[20px] md:text-[42px] font-medium leading-[24px] md:leading-[38px] tracking-[-0.6px] md:tracking-[-1.26px] line-clamp-2 md:line-clamp-none">
           {podcast.title}
         </h4>
         <p
