@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 
-import { Podcast } from "../types/podcast";
+import type { Episode } from "../schemas/episode";
 
 /**
- * Loads audio metadata for each podcast and returns a map of podcast id -> duration (seconds).
+ * Loads audio metadata for each episode and returns a map of slug -> duration (seconds).
  */
-export function usePodcastDurations(podcasts: Podcast[] | undefined) {
+export function usePodcastDurations(podcasts: Episode[] | undefined) {
   const [durations, setDurations] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!podcasts?.length) return;
 
     podcasts.forEach((podcast) => {
-      const url = podcast.audio?.url;
+      const url = podcast.audioUrl;
       if (!url) return;
 
       const audio = new Audio();
@@ -20,7 +20,7 @@ export function usePodcastDurations(podcasts: Podcast[] | undefined) {
 
       const onLoaded = () => {
         if (Number.isFinite(audio.duration)) {
-          setDurations((prev) => ({ ...prev, [podcast.id]: audio.duration }));
+          setDurations((prev) => ({ ...prev, [podcast.slug]: audio.duration }));
         }
       };
 

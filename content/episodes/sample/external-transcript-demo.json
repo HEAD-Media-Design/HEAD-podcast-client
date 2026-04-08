@@ -1,0 +1,11 @@
+{
+  "slug": "external-transcript-demo",
+  "title": "External transcript file",
+  "publishedAt": "2024-04-01T08:00:00.000Z",
+  "audioUrl": "https://res.cloudinary.com/demo/video/upload/sample_audio.mp3",
+  "summary": "Transcript text is stored in a sibling file to keep this JSON small.",
+  "showNotes": "Use transcriptFile when the transcript is very large.",
+  "authorName": "Demo Author",
+  "seriesYear": "2024",
+  "transcriptFile": "external-transcript-demo.transcript.json"
+}

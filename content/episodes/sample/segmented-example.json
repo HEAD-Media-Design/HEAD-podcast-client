@@ -1,0 +1,14 @@
+{
+  "slug": "segmented-example",
+  "title": "Example episode with segmented transcript",
+  "publishedAt": "2024-05-15T09:30:00.000Z",
+  "audioUrl": "https://res.cloudinary.com/demo/video/upload/sample_audio.mp3",
+  "summary": "Demonstrates transcript as an array of timed segments.",
+  "showNotes": "Replace audioUrl with your Cloudinary HTTPS URL. Segments may omit start/end if you only need plain display.",
+  "authorName": "Guest Host",
+  "seriesYear": "2024",
+  "transcript": [
+    { "text": "Welcome to this short example episode.", "start": 0, "end": 4 },
+    { "text": "Each segment can be shown as continuous text in the UI.", "start": 4, "end": 9 }
+  ]
+}

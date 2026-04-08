@@ -1,0 +1,42 @@
+---
+description: Migrate podcast UI from Strapi/API to JSON files + Cloudinary audio URLs
+globs:
+  - "**/*.{ts,tsx,js,jsx,astro,vue,svelte}"
+  - "**/content/**/*"
+  - "**/data/**/*"
+alwaysApply: false
+---
+
+# Static podcast content (JSON) + Cloudinary
+
+When changing this frontend, treat **podcast metadata and transcripts** as **versioned JSON (or MD/MDX)** in the repo. **Do not call Strapi or a custom REST API** for episode data unless explicitly asked to keep API support.
+
+## Data model
+
+- **Episodes**: title, slug, publishedAt, duration, description/summary, show notes, **transcript** (string or structured segments), tags/categories, optional cover image URL.
+- **Audio**: store **full HTTPS URL** to Cloudinary (or other CDN) in JSON, e.g. `audioUrl`. No audio bytes in git.
+- Prefer a **single source of truth** per episode: one file per episode under `content/episodes/` or a validated `episodes.json` index + separate transcript files if very large.
+
+## Validation
+
+- Add **runtime or build-time validation** (Zod, JSON Schema, or similar) for episode JSON so typos fail CI/build, not production.
+
+## Loading pattern
+
+- Load episode data at **build time** (SSG) or from **static JSON** served with the site. Avoid requiring a Node server for reads.
+- If the framework supports it, generate **static paths** / routes from the episode list.
+
+## Optional features (implement only if the codebase already has or clearly needs them)
+
+- **RSS / podcast feed**: generate at build from the same JSON.
+- **Search**: client-side over a pre-built index, or defer until needed.
+- **Drafts**: `published: false` in JSON and filter out in production builds.
+
+## Migration from Strapi-shaped API responses
+
+- If replacing Strapi fetches, map old fields to the new JSON shape once, then delete unused API clients, env vars (`STRAPI_URL`, tokens), and types tied to Strapi.
+
+## Do not
+
+- Do not reintroduce a database or headless CMS unless the user explicitly requests it.
+- Do not embed large base64 audio in JSON.

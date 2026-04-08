@@ -1,4 +1,4 @@
-import { Podcast } from "../types/podcast";
+import type { Episode } from "../schemas/episode";
 import React from "react";
 
 export interface PodcastControlButtonsProps {
@@ -70,7 +70,7 @@ export const PodcastControlButtons: React.FC<PodcastControlButtonsProps> = ({
 );
 
 interface PodcastControlsProps {
-  podcast: Podcast;
+  podcast: Episode;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
@@ -129,7 +129,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
             isOverlay ? "text-white" : "text-black"
           }`}
         >
-          by {podcast.author?.name || "Unknown"}
+          by {podcast.authorName ?? "Unknown"}
         </p>
       </div>
 

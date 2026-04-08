@@ -3,13 +3,13 @@ import {
   usePodcastDurations,
 } from "../hooks/usePodcastDurations";
 
-import { Podcast } from "../types/podcast";
+import type { Episode } from "../schemas/episode";
 import React from "react";
 
 interface PlaylistSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  podcasts: Podcast[];
+  podcasts: Episode[];
   currentPodcastIndex: number;
   isPlaying: boolean;
   onTogglePlay: () => void;
@@ -91,7 +91,7 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
           </div>
           <ul className="px-4 md:px-6 pb-6">
             {podcasts.map((podcast, index) => (
-              <li key={podcast.id} className="py-2 sm:py-3 md:py-4 first:pt-0">
+              <li key={podcast.slug} className="py-2 sm:py-3 md:py-4 first:pt-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -146,11 +146,11 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
                       {podcast.title}
                     </p>
                     <p className="font-spline-sans text-base md:text-[22px] leading-tight sm:leading-[24px] text-black mt-0.5">
-                      by {podcast.author?.name ?? "Unknown"}
+                      by {podcast.authorName ?? "Unknown"}
                     </p>
                   </div>
                   <span className="flex-shrink-0 font-spline-sans-mono text-xs sm:text-base md:text-[22px] leading-[24px] text-black tabular-nums">
-                    {formatDuration(durations[podcast.id] ?? NaN)}
+                    {formatDuration(durations[podcast.slug] ?? NaN)}
                   </span>
                 </button>
               </li>

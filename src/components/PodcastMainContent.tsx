@@ -2,13 +2,15 @@ import React, { useMemo } from "react";
 
 import NextButton from "./NextButton";
 import P5Canvas from "./P5Canvas";
-import { Podcast } from "../types/podcast";
+import { episodeBodyText } from "../data/episodes";
+import type { Episode } from "../schemas/episode";
+import { transcriptToPlainText } from "../lib/transcript";
 import PrevButton from "./PrevButton";
 import { audioReactiveSketch } from "../sketches/audioReactiveSketch";
 
 interface PodcastMainContentProps {
-  currentPodcast: Podcast;
-  nextPodcast: Podcast | null;
+  currentPodcast: Episode;
+  nextPodcast: Episode | null;
   showNextPrompt?: boolean;
   onPrevPodcast: () => void;
   onNextPodcast: () => void;
@@ -19,6 +21,8 @@ interface PodcastMainContentProps {
   isPlaying: boolean;
   currentTime: number;
   outputLatency: number;
+  /** Playlist index (0-based); p5 viz cycles theme 1–2–3 by this order. */
+  playbackOrderIndex: number;
 }
 
 const DEFAULT_TRANSCRIPT =
@@ -37,15 +41,13 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   isPlaying,
   currentTime,
   outputLatency,
+  playbackOrderIndex,
 }) => {
+  const transcriptRaw = transcriptToPlainText(currentPodcast.transcript);
   const transcript =
-    currentPodcast.transcript ||
-    currentPodcast.description ||
-    DEFAULT_TRANSCRIPT;
-  const year =
-    typeof currentPodcast.category?.name === "string"
-      ? currentPodcast.category?.name.split("_")[1]
-      : "2024";
+    transcriptRaw.trim().length > 0 ? transcriptRaw : DEFAULT_TRANSCRIPT;
+  const year = currentPodcast.seriesYear ?? "2024";
+  const aboutBody = episodeBodyText(currentPodcast);
 
   const p5Props = useMemo(
     () => ({
@@ -59,12 +61,14 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
       isPlaying,
       currentTime,
       outputLatency,
+      playbackOrderIndex,
     }),
     [
       isConnected,
       isPlaying,
       currentTime,
       outputLatency,
+      playbackOrderIndex,
       analyserRef,
       simulatedLevelRef,
     ],
@@ -115,7 +119,7 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
                 ABOUT
               </p>
               <p className="font-spline-sans text-black text-sm leading-tight">
-                {currentPodcast.description}
+                {aboutBody}
               </p>
             </div>
             <div className="mb-8 md:mb-0">
@@ -141,7 +145,7 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
                 {nextPodcast.title}
               </h3>
               <p className="font-spline-sans text-black text-sm line-clamp-2 mb-4">
-                {nextPodcast.description}
+                {nextPodcast.summary}
               </p>
               <button
                 type="button"

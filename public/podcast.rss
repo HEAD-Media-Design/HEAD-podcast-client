@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>HEAD-Genève Media Design Podcasts</title>
+    <link>https://example.com</link>
+    <description>Podcasts from HEAD–Genève Media Design (static feed from repo JSON).</description>
+    <language>en</language>
+    <atom:link href="https://example.com/podcast.rss" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Are algorithm translator friendly ?</title>
+      <link>https://example.com/episode/are-algorithm-translator-friendly</link>
+      <guid isPermaLink="true">https://example.com/episode/are-algorithm-translator-friendly</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>La traduction automatique va-t-elle remplacer les traducteurs ? Entre algorithmes performants et perte de subtilité, Tristan et Valentine interrogent la place du sens, de la culture… et de l’humain. Car à l’heure de l’IA, faut-il sacrifier la profondeur au profit de l’efficacité ?</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Creative person and their use of Pinterest</title>
+      <link>https://example.com/episode/creative-person</link>
+      <guid isPermaLink="true">https://example.com/episode/creative-person</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>The podcast is about the use of Pinterest as a creative person. Is Pinterest good for the creativity? Really help the artist or in the contrary standardizes creation codes. Also, it's about frequency of use, and is it relevant to share our work in Pinterest.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Emotional Cartography</title>
+      <link>https://example.com/episode/emotional-cartography</link>
+      <guid isPermaLink="true">https://example.com/episode/emotional-cartography</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>This episode explore emotional topography and how algorithms like Google Maps shape how we move and emotionally connect to our surroundings.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Google's targeted ads &amp; privacy</title>
+      <link>https://example.com/episode/google-target-ad</link>
+      <guid isPermaLink="true">https://example.com/episode/google-target-ad</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>How do people feel about Google's use of their personal information for personalized ads, particularly regarding privacy concerns?</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660134/Supernova_Google_s_targeted_ads_and_privacy_Haneul_c86327c1ef_ypofmy.wav" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Hacking Tinder</title>
+      <link>https://example.com/episode/hacking-tinder</link>
+      <guid isPermaLink="true">https://example.com/episode/hacking-tinder</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>A dive into how Tinder users game the algorithm and brand themselves.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Image Generation</title>
+      <link>https://example.com/episode/image-generation</link>
+      <guid isPermaLink="true">https://example.com/episode/image-generation</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>This podcast discusses the place of image generation and its diversion in the creative process.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660120/image_generation_antonin_ricou_48b8747c12_nxfcaz.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Not Just Ads: When Algorithms Push Too Far</title>
+      <link>https://example.com/episode/not-just-ads</link>
+      <guid isPermaLink="true">https://example.com/episode/not-just-ads</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>If you live in China, or you are using some Chinese apps, you will find Taobao fullscreen ads are everywhere on other Chinese apps such as Weibo, the community app or Wangyi, an email app. Acting as one of the most intrusive forms of digital advertising, these ads don't wait for your input; the algorithm behind it don't need a search bar, filters, or any user action—they just jump out at you, demanding your attention at the moment you open apps. This makes them stand out among other algorithms with the highest level of activeness.
+
+But how do users actually experience these ads? What do they think about the gesture of the appearance of the algorithms? And what does this tell us about the folk's relationship with them? In this episode, we'll try to find some answers.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>The Best Photo</title>
+      <link>https://example.com/episode/the-best-photo</link>
+      <guid isPermaLink="true">https://example.com/episode/the-best-photo</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>A brief look at devices selecting a top photo in a stack.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Tiktok Censorship Algorithm and Expression</title>
+      <link>https://example.com/episode/tiktok-censorship</link>
+      <guid isPermaLink="true">https://example.com/episode/tiktok-censorship</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>A short study of tiktok's censorship algorithm and its effects on the userbase.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Twitter X Podcast</title>
+      <link>https://example.com/episode/twitter-x-podcast</link>
+      <guid isPermaLink="true">https://example.com/episode/twitter-x-podcast</guid>
+      <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
+      <description>Pros and cons of social network X, its relevance and evolution since its acquisition.</description>
+      <enclosure url="https://res.cloudinary.com/duyvjsf0v/video/upload/q_auto/f_auto/v1775660123/Peter_Ha_Supernova_The_Best_Photo_ac89162f48_xantxt.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>Example episode with segmented transcript</title>
+      <link>https://example.com/episode/segmented-example</link>
+      <guid isPermaLink="true">https://example.com/episode/segmented-example</guid>
+      <pubDate>Wed, 15 May 2024 09:30:00 GMT</pubDate>
+      <description>Demonstrates transcript as an array of timed segments.</description>
+      <enclosure url="https://res.cloudinary.com/demo/video/upload/sample_audio.mp3" type="audio/mpeg" length="0" />
+    </item>
+    <item>
+      <title>External transcript file</title>
+      <link>https://example.com/episode/external-transcript-demo</link>
+      <guid isPermaLink="true">https://example.com/episode/external-transcript-demo</guid>
+      <pubDate>Mon, 01 Apr 2024 08:00:00 GMT</pubDate>
+      <description>Transcript text is stored in a sibling file to keep this JSON small.</description>
+      <enclosure url="https://res.cloudinary.com/demo/video/upload/sample_audio.mp3" type="audio/mpeg" length="0" />
+    </item>
+  </channel>
+</rss>
