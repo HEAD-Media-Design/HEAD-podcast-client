@@ -38,16 +38,17 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
       />
 
       <aside
-        className={`fixed top-0 left-0 h-full z-40 flex flex-col
-          w-full md:w-[50%]
+        className={`fixed top-0 left-0 z-40 flex h-full w-full flex-col overflow-x-hidden
+          md:w-[50%]
           bg-[#5CD1E0] border-b-[5px] border-black
           shadow-[4px_0_4px_0_rgba(0,0,0,0.25)] backdrop-blur-[2px]
           transition-transform duration-300 ease-out
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+          ${isOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"}`}
         aria-label="Playlist"
+        aria-hidden={!isOpen}
       >
-        <div className="flex items-center justify-between px-4 md:px-6 pt-4 pb-3 flex-shrink-0 relative">
-          <h2 className="font-spline-sans-mono text-[48px] md:text-[120px] tracking-tight text-black leading-[65px] md:leading-[120px]">
+        <div className="relative flex flex-shrink-0 items-center justify-between px-4 pb-3 pt-4 md:px-6">
+          <h2 className="min-w-0 shrink font-spline-sans-mono text-[48px] leading-[65px] tracking-tight text-black md:text-[clamp(2.5rem,12vw,7.5rem)] md:leading-[1]">
             Playlist
           </h2>
           <button

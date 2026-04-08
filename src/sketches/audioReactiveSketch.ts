@@ -125,11 +125,15 @@ const LEVEL_SMOOTH_RELEASE = 0.05;
  * After smoothing, motion never drops below this while playing — avoids “frozen” trails in quiet audio.
  */
 const MOTION_FLOOR = 0.16;
+/** Floor for stroke-width blend while playing so silence still reads as a continuous tube, not dotted gaps. */
+const STROKE_BLEND_FLOOR = 0.22;
+/** Minimum stroke weight (px) at low volume; must overlap substeps (see stroke-aware maxStep). */
+const STROKE_WEIGHT_MIN = 8.5;
 /** Minimum random target drift (px/frame) while playing. */
 const TARGET_WANDER_MIN = 2.75;
 /** Max planar step per sub-segment so tab-throttle / big velocity does not leave visual gaps. */
 const MAX_PLANAR_STEP_FRAC = 0.055;
-const MAX_SUBSTEPS = 48;
+const MAX_SUBSTEPS = 64;
 
 function hexPalette(p: p5, hexes: readonly string[]): p5.Color[] {
   return hexes.map((hex) => p.color(`#${hex}`));
@@ -213,10 +217,13 @@ function appendSegmentsAlongMotion(
   }[],
 ): void {
   const planarDist = p5.Vector.dist(prev, next);
-  const maxStep = Math.max(
+  const canvasCap = Math.max(
     14,
     Math.min(p.width, p.height) * MAX_PLANAR_STEP_FRAC,
   );
+  /** Keep steps small vs stroke so tube caps overlap (fixes “dots” when level is low). */
+  const strokeCap = Math.max(sw * 0.72, 5.5);
+  const maxStep = Math.min(canvasCap, strokeCap);
   const n = Math.min(
     MAX_SUBSTEPS,
     Math.max(1, Math.ceil(planarDist / maxStep)),
@@ -431,7 +438,8 @@ export const audioReactiveSketch: P5Sketch<AudioReactiveSketchProps> = (
         pos = p5.Vector.add(center, toCenterP);
       }
 
-      const sw = p.lerp(4, 26, Math.max(level, 0.06));
+      const strokeBlend = Math.max(vMotion, smoothLevel, STROKE_BLEND_FLOOR);
+      const sw = p.lerp(STROKE_WEIGHT_MIN, 26, strokeBlend);
 
       appendSegmentsAlongMotion(p, prev, pos, noiseT, sw, segments);
       while (segments.length > MAX_SEGMENTS) segments.shift();

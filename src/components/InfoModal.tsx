@@ -8,7 +8,7 @@ function InfoModal() {
           {/* Left Column */}
           <div className="flex flex-col">
             <h1 className="font-spline-sans-mono text-[28px] md:text-[72px] font-medium leading-[36px] md:leading-[90px] text-left">
-              The voices of students from HEAD-Genève
+              Investigating algorithms and machine learning
             </h1>
 
             <div className="flex flex-col md:flex-row mt-8 md:mt-[70px] text-left gap-4 md:gap-0">
@@ -18,6 +18,14 @@ function InfoModal() {
                 </h2>
               </div>
               <div className="flex flex-col justify-center font-spline-sans text-[18px] md:text-[36px] leading-[28px] md:leading-[44px]">
+                <a
+                  href="https://mastermediadesign.ch/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="no-underline hover:underline focus:outline-none"
+                >
+                  → Media Design
+                </a>
                 <a
                   href="https://www.hesge.ch/head/"
                   target="_blank"
@@ -61,8 +69,8 @@ function InfoModal() {
                 About
               </h2>
               <p className="text-white/90 leading-[24px] md:leading-[32px] font-spline-sans text-[16px] md:text-[24px]">
-                A collection of podcasts created by students during their
-                studies at HEAD-Genève.
+                A collection of student podcasts from the Master Media Design
+                theory seminar at HEAD–Genève.
               </p>
             </div>
 
@@ -71,8 +79,9 @@ function InfoModal() {
                 Dedication
               </h2>
               <p className="text-white/90 leading-[24px] md:leading-[32px] font-spline-sans text-[16px] md:text-[24px]">
-                In honour of Nicolas Nova who made an impact on the institution
-                and the students he taught.
+                In honour of Nicolas Nova, who led this seminar with brilliance
+                and passion. His profound impact on this institution and the
+                students he mentored continues to resonate through our work.
               </p>
             </div>
           </div>
