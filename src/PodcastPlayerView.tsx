@@ -39,6 +39,7 @@ function PodcastPlayerView() {
     null,
   );
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [playbackEnded, setPlaybackEnded] = useState(false);
 
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
   const {
@@ -126,6 +127,7 @@ function PodcastPlayerView() {
         setIsPlaying(false);
       } else {
         setShowNextPrompt(false);
+        setPlaybackEnded(false);
         await resumeAudioContext();
         await audioPlayerRef.current.play();
         setIsPlaying(true);
@@ -140,6 +142,9 @@ function PodcastPlayerView() {
   const handleSeek = (time: number) => {
     audioPlayerRef.current?.seekTo(time);
     setCurrentTime(time);
+    if (duration > 0 && time < duration - 0.25) {
+      setPlaybackEnded(false);
+    }
   };
 
   const handleLoadedMetadata = (audioDuration: number) => {
@@ -150,6 +155,7 @@ function PodcastPlayerView() {
     setIsPlaying(false);
     setCurrentTime(0);
     setShowNextPrompt(true);
+    setPlaybackEnded(true);
   };
 
   const handleAudioError = (error: unknown) => {
@@ -161,6 +167,10 @@ function PodcastPlayerView() {
 
   useEffect(() => {
     setAudioError(null);
+  }, [currentPodcastIndex]);
+
+  useEffect(() => {
+    setPlaybackEnded(false);
   }, [currentPodcastIndex]);
 
   if (!EPISODES.length) {
@@ -260,6 +270,7 @@ function PodcastPlayerView() {
               isPlaying={isPlaying}
               currentTime={currentTime}
               duration={duration}
+              playbackEnded={playbackEnded}
               onTogglePlay={togglePlay}
               onListClick={() => setIsPlaylistOpen(true)}
               onSeek={handleSeek}

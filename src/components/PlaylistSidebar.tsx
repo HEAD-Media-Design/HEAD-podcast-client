@@ -47,8 +47,8 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
         aria-label="Playlist"
         aria-hidden={!isOpen}
       >
-        <div className="relative flex flex-shrink-0 items-center justify-between px-4 pb-3 pt-4 md:px-6">
-          <h2 className="min-w-0 shrink font-spline-sans-mono text-[48px] leading-[65px] tracking-tight text-black md:text-[clamp(2.5rem,12vw,7.5rem)] md:leading-[1]">
+        <div className="relative flex flex-shrink-0 items-center justify-between px-4 pb-3 pt-4 md:px-6 h-[160px] border-b-[5px] border-black">
+          <h2 className="min-w-0 shrink font-spline-sans-mono text-[48px] not-italic font-medium  tracking-[-2.4px] text-black md:text-[110px] md:tracking-[-5.5px]">
             Playlist
           </h2>
           <button
@@ -70,29 +70,28 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
             </svg>
           </button>
         </div>
-        <div className="border-b-[5px] border-black flex-shrink-0" />
 
         <div className="playlist-sidebar-scroll flex-1 overflow-y-auto text-left">
-          <div className="flex sm:flex-row my-6 mx-4 sm:my-[54px] sm:mx-[32px] gap-2 sm:items-start">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-spline-sans text-2xl sm:text-[48px] leading-tight tracking-[-0.96px] font-bold text-black">
-                Supernova
+          <div className="flex flex-col my-6 mx-4 sm:my-[54px] sm:mx-[30px] sm:items-start">
+            <div className="flex items-center justify-between w-full">
+              <h3 className="mt-1 font-spline-sans text-[22px] not-italic font-semibold text-black md:mt-0 md:text-[48px] md:tracking-[-0.96px]">
+                Everyday Algorithms
               </h3>
-              <h3 className="font-spline-sans text-2xl sm:text-[48px] leading-tight sm:leading-[1.2] tracking-[-0.96px] text-black mt-1 sm:mt-0">
-                Algorithms Beyond Us
-              </h3>
-              <p className="font-spline-sans text-base sm:text-[28px] leading-snug sm:leading-[36px] tracking-[-0.56px] mt-4 sm:mt-6">
-                Master of Media Design students investigate algorithms embedded
-                in our everyday lives.
-              </p>
+              <div className="my-auto flex-shrink-0 px-2.5 py-1 rounded-full bg-black text-white text-sm sm:text-[22px] font-spline-sans font-bold h-fit self-start">
+                2024
+              </div>
             </div>
-            <div className="flex-shrink-0 px-2.5 py-1 rounded-full bg-black text-white text-sm sm:text-[22px] font-spline-sans font-bold h-fit self-start">
-              2024
-            </div>
+            <p className="mt-2 font-spline-sans text-[14px] not-italic font-normal leading-[18px] text-black md:text-[28px] md:leading-[36px] md:tracking-[-0.56px]">
+              Master of Media Design students investigate algorithms embedded in
+              our everyday lives.
+            </p>
           </div>
           <ul className="px-4 md:px-6 pb-6">
             {podcasts.map((podcast, index) => (
-              <li key={podcast.slug} className="py-2 sm:py-3 md:py-4 first:pt-0">
+              <li
+                key={podcast.slug}
+                className="py-2 sm:py-3 md:py-4 first:pt-0"
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -143,10 +142,10 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
                     </svg>
                   )}
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="font-spline-sans-mono font-bold text-base sm:text-xl md:text-[28px] leading-tight sm:leading-[24px] text-black">
+                    <p className="font-spline-sans-mono text-[14px] not-italic font-semibold leading-[16px] text-black md:text-[28px] md:font-medium md:leading-[32px] max-w-[230px] line-clamp-2 md:max-w-[520px]">
                       {podcast.title}
                     </p>
-                    <p className="font-spline-sans text-base md:text-[22px] leading-tight sm:leading-[24px] text-black mt-0.5">
+                    <p className="mt-0.5 font-spline-sans-mono text-[11px] not-italic font-normal leading-[16px] text-black md:text-[22px] md:leading-[32px]">
                       by {podcast.authorName ?? "Unknown"}
                     </p>
                   </div>

@@ -9,9 +9,9 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onInfoClick, isInfoOpen }) => {
   return (
-    <div className="h-[71px] max-w-full overflow-x-hidden border-black border-b-[3px] p-0 py-0 md:border-b-[5px] md:px-[25px] md:h-[160px]">
+    <div className="flex max-h-[71px] min-h-[71px] max-w-full flex-col overflow-hidden border-black border-b-[3px] p-0 py-0 md:max-h-none md:min-h-0 md:h-[160px] md:overflow-x-hidden md:overflow-y-visible md:border-b-[5px] md:px-[25px]">
       {/* Desktop */}
-      <div className="hidden relative min-w-0 w-full flex-col md:flex">
+      <div className="relative hidden min-h-0 w-full min-w-0 flex-1 flex-col md:flex">
         <button
           type="button"
           className="absolute top-0 right-0 mb-2 ml-auto w-fit shrink-0 cursor-pointer bg-black px-3 py-1 pl-[calc(12px+5.4px)] font-spline-sans-mono text-[18px] font-semibold leading-[18px] tracking-[5.4px] text-white"
@@ -40,19 +40,19 @@ const Header: React.FC<HeaderProps> = ({ onInfoClick, isInfoOpen }) => {
       </div>
 
       {/* Mobile */}
-      <div className="flex h-[71px] w-full items-center justify-between md:hidden">
-        <div className="flex min-w-0 flex-1 flex-col justify-center">
-          <span className="text-left text-[#000] font-spline-sans text-[clamp(0.9375rem,4.2vw+0.45rem,2.125rem)] not-italic font-semibold leading-[0.824] tracking-[-0.02em]">
+      <div className="relative flex min-h-0 w-full flex-1 items-center justify-between gap-2 md:hidden">
+        <div className="flex min-w-0 w-full flex-1 flex-col justify-center ml-2">
+          <span className="text-left font-spline-sans text-[34px] not-italic font-semibold leading-[28px] tracking-[-0.68px] text-black">
             Supernova
           </span>
-          <span className="mt-1 text-left text-[#000] font-spline-sans text-[clamp(0.9375rem,4.2vw+0.45rem,2.125rem)] not-italic font-semibold leading-[0.824] tracking-[-0.02em]">
+          <span className="mt-1 text-left font-spline-sans text-[34px] not-italic font-semibold leading-[28px] tracking-[-0.68px] text-black">
             Podcast
           </span>
         </div>
-        <div className="flex h-[65px] w-[64px] shrink-0 items-center justify-center px-1">
+        <div className="flex h-[65px] w-[64px] items-center justify-center absolute right-35">
           <SupernovaLogo className="h-full w-full max-h-full max-w-full object-contain" />
         </div>
-        <div className="flex flex-1 justify-end">
+        <div className="flex flex-1 max-w-fit">
           <button
             type="button"
             className="shrink-0 cursor-pointer bg-black px-3 py-1 pl-[calc(12px+5.4px)] font-spline-sans-mono text-[18px] font-semibold leading-[18px] tracking-[5.4px] text-white"
