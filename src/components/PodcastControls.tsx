@@ -217,6 +217,8 @@ type PodcastControlsContentLayerProps = {
   onMarqueeLayout: (info: MarqueeLayoutInfo) => void;
   registerBaseTrack: (el: HTMLDivElement | null) => void;
   registerOverlayTrack: (el: HTMLDivElement | null) => void;
+  /** Shown beside author on small screens; desktop uses the floating chip on the bar. */
+  mobileInlineTime: string;
 };
 
 type PodcastControlsContentLayerSharedProps = Omit<
@@ -234,6 +236,7 @@ function PodcastControlsContentLayer({
   onMarqueeLayout,
   registerBaseTrack,
   registerOverlayTrack,
+  mobileInlineTime,
 }: PodcastControlsContentLayerProps) {
   return (
     <div
@@ -260,13 +263,22 @@ function PodcastControlsContentLayer({
             {podcast.title}
           </span>
         </h4>
-        <p
-          className={`font-spline-sans-mono text-[12px] not-italic font-normal leading-[19px] tracking-[-0.24px] md:text-[24px] md:leading-[38px] md:tracking-[-0.72px] ${
-            isOverlay ? "text-white" : "text-black"
-          }`}
-        >
-          by {podcast.authorName ?? "Unknown"}
-        </p>
+        <div className="flex items-baseline justify-between gap-2 md:block">
+          <p
+            className={`min-w-0 flex-1 font-spline-sans-mono text-[12px] not-italic font-normal leading-[19px] tracking-[-0.24px] md:flex-none md:text-[24px] md:leading-[38px] md:tracking-[-0.72px] ${
+              isOverlay ? "text-white" : "text-black"
+            }`}
+          >
+            by {podcast.authorName ?? "Unknown"}
+          </p>
+          <span
+            className="pointer-events-none shrink-0 md:hidden inline-flex max-w-[45%] items-center justify-end rounded-sm bg-white/90 px-1.5 py-0.5 text-right tabular-nums font-spline-sans-mono text-[12px] leading-[19px] tracking-[-0.24px] text-black backdrop-blur-sm"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {mobileInlineTime}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -390,6 +402,8 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
     onSeek(time);
   };
 
+  const timeLabel = `${formatTime(currentTime)}/${formatTime(duration)}`;
+
   const layerProps: PodcastControlsContentLayerSharedProps = {
     podcast,
     playbackEnded,
@@ -398,6 +412,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
     onMarqueeLayout: handleMarqueeLayout,
     registerBaseTrack,
     registerOverlayTrack,
+    mobileInlineTime: timeLabel,
   };
 
   return (
@@ -445,30 +460,13 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
           </div>
         </div>
 
-        <span className="pointer-events-none absolute bottom-2 right-4 z-20 text-right tabular-nums font-spline-sans-mono text-[14px] leading-[20px] tracking-[-0.28px] text-black md:bottom-4 md:right-6 md:text-[24px] md:leading-[38px] md:tracking-[-0.48px]">
-          {formatTime(currentTime)}/{formatTime(duration)}
-        </span>
-
-        <div
-          className="pointer-events-none absolute top-0 left-0 z-20 h-full overflow-hidden transition-[width] duration-300 ease-out"
-          style={{ width: `${progressPercentage}%` }}
-          aria-hidden
+        <span
+          className="pointer-events-none absolute bottom-4 right-6 z-20 hidden max-w-[calc(100%-2rem)] items-center justify-end rounded-md bg-white/90 px-2 py-1 text-right tabular-nums font-spline-sans-mono text-[24px] leading-[38px] tracking-[-0.48px] text-black backdrop-blur-sm md:inline-flex"
+          aria-live="polite"
+          aria-atomic="true"
         >
-          {/* Expand to full track width inside the clip so `right-4` matches the black time (w-screen was viewport-wide, so time sat outside the left clip). */}
-          <div
-            className="absolute left-0 top-0 h-full"
-            style={{
-              width:
-                progressPercentage > 0
-                  ? `${100 / (progressPercentage / 100)}%`
-                  : "0%",
-            }}
-          >
-            <span className="absolute bottom-2 right-4 text-right tabular-nums font-spline-sans-mono text-[14px] leading-[20px] tracking-[-0.28px] text-white md:bottom-4 md:right-6 md:text-[24px] md:leading-[38px] md:tracking-[-0.48px]">
-              {formatTime(currentTime)}/{formatTime(duration)}
-            </span>
-          </div>
-        </div>
+          {timeLabel}
+        </span>
 
         {renderButtonsSeparately ? (
           <div
