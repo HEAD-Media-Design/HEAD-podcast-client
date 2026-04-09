@@ -172,28 +172,11 @@ button {
   min-height: 0;
   height: 100%;
 }
-.transcript-panel-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto auto;
-  grid-template-areas: "title" "transcript" "meta";
+/* Single-column transcript stack (About moved onto the p5 column). */
+.transcript-panel-inner {
+  display: flex;
+  flex-direction: column;
   min-height: min-content;
-}
-@media (min-width: 768px) {
-  .transcript-panel-grid {
-    grid-template-columns: 35% 1fr;
-    grid-template-rows: auto auto;
-    grid-template-areas: "title transcript" "meta transcript";
-  }
-}
-.transcript-panel-title {
-  grid-area: title;
-}
-.transcript-panel-transcript {
-  grid-area: transcript;
-}
-.transcript-panel-meta {
-  grid-area: meta;
 }
 
 /* Transcript panel: transparent scrollbar track */

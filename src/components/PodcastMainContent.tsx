@@ -4,7 +4,7 @@ import NextButton from "./NextButton";
 import P5Canvas from "./P5Canvas";
 import { episodeBodyText } from "../data/episodes";
 import type { Episode } from "../schemas/episode";
-import { transcriptToPlainText } from "../lib/transcript";
+import { transcriptToBlocks, transcriptToPlainText } from "../lib/transcript";
 import PrevButton from "./PrevButton";
 import { audioReactiveSketch } from "../sketches/audioReactiveSketch";
 
@@ -28,6 +28,40 @@ interface PodcastMainContentProps {
 const DEFAULT_TRANSCRIPT =
   "Hi folks, welcome to Supernova, where we discuss algorithms beyond us. I'm your host Peter Ha and I'll be talking about mobile photography and how we select and manage photos.";
 
+function TranscriptBlocks({
+  blocks,
+}: {
+  blocks: ReturnType<typeof transcriptToBlocks>;
+}) {
+  return (
+    <>
+      {blocks.map((block, i) => (
+        <div
+          key={i}
+          className={
+            block.speaker ? "mb-6 flex gap-4 md:mb-8 md:gap-8" : "mb-5 md:mb-6"
+          }
+        >
+          {block.speaker ? (
+            <>
+              <p className="w-[6.75rem] shrink-0 pt-0.5 font-spline-sans text-[10px] font-bold uppercase leading-tight tracking-wide text-black md:w-32 md:text-[11px]">
+                {block.speaker}
+              </p>
+              <p className="min-w-0 flex-1 text-left font-spline-sans text-[18px] text-black md:text-base">
+                {block.text}
+              </p>
+            </>
+          ) : (
+            <p className="text-left font-spline-sans text-[18px] text-black md:text-base">
+              {block.text}
+            </p>
+          )}
+        </div>
+      ))}
+    </>
+  );
+}
+
 const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   currentPodcast,
   nextPodcast,
@@ -43,10 +77,12 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   outputLatency,
   playbackOrderIndex,
 }) => {
-  const transcriptRaw = transcriptToPlainText(currentPodcast.transcript);
-  const transcript =
-    transcriptRaw.trim().length > 0 ? transcriptRaw : DEFAULT_TRANSCRIPT;
-  const year = currentPodcast.seriesYear ?? "2024";
+  const transcriptBlocks = useMemo(() => {
+    const plain = transcriptToPlainText(currentPodcast.transcript).trim();
+    if (plain.length === 0) return transcriptToBlocks(DEFAULT_TRANSCRIPT);
+    return transcriptToBlocks(currentPodcast.transcript);
+  }, [currentPodcast.transcript]);
+
   const aboutBody = episodeBodyText(currentPodcast);
 
   const p5Props = useMemo(
@@ -74,87 +110,93 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
     ],
   );
 
+  const aboutHeading = (
+    <p className="font-spline-sans text-[9px] md:text-[12px] font-bold uppercase tracking-[0.14em] text-black ">
+      ABOUT
+    </p>
+  );
+
+  const aboutParagraph = (
+    <p className="font-spline-sans text-[14px] leading-snug text-black">
+      {aboutBody}
+    </p>
+  );
+
+  const nextPromptOpen = Boolean(nextPodcast && showNextPrompt);
+
   return (
-    <div className="flex-1 min-h-0 flex flex-col md:flex-row h-full overflow-hidden relative">
-      <div className="flex-shrink-0 w-full md:w-[50%] bg-[#E53935] relative flex items-center justify-center md:h-full h-1/2 min-h-[240px] overflow-hidden">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden  md:flex-row">
+      {/* Left: p5 only (desktop ~50%; mobile white band per mock) */}
+      <div className="relative flex h-[min(42vh,250px)] min-h-[160px] w-full shrink-0 items-center justify-center overflow-hidden border-b-[3px] border-black md:h-full md:min-h-0 md:w-3/4 md:shrink-0 md:border-b-0 md:border-black">
         <P5Canvas
           sketch={audioReactiveSketch}
           props={p5Props}
-          className="w-full h-full"
+          className="h-full w-full"
         />
       </div>
+
+      {/* Prev / Next: floating on all breakpoints (mobile + desktop) */}
       <PrevButton
         onClick={onPrevPodcast}
-        className="absolute left-4 top-1/2 -translate-y-1/2"
+        className="absolute left-2 top-1/2 z-30 -translate-y-1/2 md:left-3"
       />
       <NextButton
         onClick={onNextPodcast}
-        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2"
+        className="absolute right-2 top-1/2 z-30 -translate-y-1/2 md:right-5"
       />
 
-      {/* Right panel: Transcript (yellow) - fills height, scrolls when content overflows */}
-      <div className="flex-1 min-h-0 h-full transcript-panel bg-[#FACC15] md:min-w-0 px-4 md:px-0 text-left relative py-6 px-14">
-        <div className="transcript-panel-grid px-0">
-          {/* Title */}
-          <div className="transcript-panel-title px-2 md:px-6 md:py-10 md:pr-4 pb-6">
-            <h2 className="font-spline-sans-mono font-bold text-black text-2xl md:text-3xl">
-              Transcript
-            </h2>
-          </div>
+      {/* 데스크톱: absolute로 화면(메인) 오른쪽 절반 — flex에서 빠지므로 남는 폭용 스페이서 필요 */}
+      <div
+        className="hidden min-h-0 md:block md:h-full md:min-w-0 md:flex-1"
+        aria-hidden
+      />
 
-          {/* Transcript text - one copy */}
-          <div className="transcript-panel-transcript min-h-0 px-2 md:px-8 md:pl-6 md:py-10">
-            <p className="font-spline-sans text-black text-sm md:text-base whitespace-pre-wrap pr-8 md:pr-14">
-              {transcript}
-            </p>
-          </div>
+      {/* 모바일: 스케치 아래 flex-1 / md: 오른쪽 50% absolute */}
+      <div className="transcript-panel relative z-10 min-h-0 h-full w-full flex-1 bg-transparent text-left md:absolute md:inset-y-0 md:w-1/2 md:right-0 md:flex-none">
+        {!nextPromptOpen && (
+          <div className="transcript-panel-inner px-12 pb-6 pt-[16px] md:px-8 md:py-10 md:pr-10 lg:px-12 lg:pr-14">
+            <div className="md:grid md:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] md:gap-x-[40px] lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
+              <aside className="mb-8 hidden text-left md:mb-0 md:block md:pt-1">
+                <h2 className="mb-[22px] font-spline-sans-mono text-[36px] font-bold text-black md:text-4xl lg:text-[2.75rem]">
+                  Transcript
+                </h2>
+                {aboutHeading}
+                {aboutParagraph}
+              </aside>
 
-          {/* Metadata + Next Podcast - one copy */}
-          <div className="transcript-panel-meta px-2 md:px-6 md:pr-4 md:pb-8 pt-6">
-            <p className="font-spline-sans font-bold text-black text-sm md:text-base mb-6 md:mb-10">
-              Completed in Master Media Design Theory Seminar {year}
-            </p>
-            <div className="mb-4 md:mb-6">
-              <p className="font-spline-sans font-bold text-black text-xs uppercase tracking-wide mb-1 md:mb-2">
-                ABOUT
-              </p>
-              <p className="font-spline-sans text-black text-sm leading-tight">
-                {aboutBody}
-              </p>
-            </div>
-            <div className="mb-8 md:mb-0">
-              <p className="font-spline-sans font-bold text-black text-xs uppercase tracking-wide mb-1 md:mb-2">
-                TEACHER
-              </p>
-              <p className="font-spline-sans text-black text-sm">
-                Nicolas Nova
-              </p>
+              <div className="min-w-0 md:pt-1">
+                <div className="mb-8 md:hidden">
+                  {aboutHeading}
+                  {aboutParagraph}
+                </div>
+                <h2 className="mb-1 font-spline-sans-mono text-[36px] font-bold text-black md:mb-0 md:hidden">
+                  Transcript
+                </h2>
+                <TranscriptBlocks blocks={transcriptBlocks} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Next Podcast: centered overlay on yellow panel, focus when showNextPrompt */}
-        {nextPodcast && showNextPrompt && (
+        {nextPromptOpen && nextPodcast && (
           <div
             tabIndex={-1}
-            className="absolute inset-0 bg-[#FACC15] flex items-center justify-center px-4 md:px-6 outline-none"
+            className="transcript-panel-inner text-left flex h-full justify-center min-h-0 w-full flex-col gap-6 px-15 outline-none md:gap-8 md:py-10 md:px-25"
             aria-label="Next podcast"
           >
-            <div className="min-w-0 max-w-md w-full">
-              <h3 className="font-spline-sans-mono font-bold text-black text-lg mb-4">
-                {nextPodcast.title}
-              </h3>
-              <p className="font-spline-sans text-black text-sm line-clamp-2 mb-4">
-                {nextPodcast.summary}
-              </p>
-              <button
-                type="button"
-                onClick={onPlayNext}
-                className="font-spline-sans-mono font-bold text-black text-lg cursor-pointer hover:underline"
-              >
-                Play
-              </button>
-            </div>
+            <p className="font-spline-sans-mono text-2xl font-bold leading-tight text-black md:text-3xl">
+              {nextPodcast.title}
+            </p>
+            <p className="font-spline-sans text-[18px] font-normal leading-relaxed text-black md:text-base">
+              {nextPodcast.summary}
+            </p>
+            <button
+              type="button"
+              onClick={onPlayNext}
+              className="text-left w-fit cursor-pointer p-0 font-spline-sans-mono text-lg font-bold text-black underline md:text-xl"
+            >
+              Play
+            </button>
           </div>
         )}
       </div>

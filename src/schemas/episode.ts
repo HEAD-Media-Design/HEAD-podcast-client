@@ -4,6 +4,8 @@ export const transcriptSegmentSchema = z.object({
   text: z.string(),
   start: z.number().optional(),
   end: z.number().optional(),
+  /** Optional label (e.g. speaker) shown beside the segment in the transcript UI. */
+  speaker: z.string().optional(),
 });
 
 export type TranscriptSegment = z.infer<typeof transcriptSegmentSchema>;
