@@ -240,11 +240,11 @@ function PodcastControlsContentLayer({
 }: PodcastControlsContentLayerProps) {
   return (
     <div
-      className={`flex items-start justify-between pl-2 pr-4 md:px-6 ${
+      className={`flex items-start justify-between md:px-6 max-md:pl-[max(16px,env(safe-area-inset-left,0px))] max-md:pr-[max(16px,env(safe-area-inset-right,0px))] max-md:pb-2.5 ${
         isOverlay ? "text-white" : "text-black"
       }`}
     >
-      <div className="min-w-0 flex-1 p-1 text-left md:flex-initial md:p-[16px]">
+      <div className="min-w-0 flex-1 p-2 text-left md:flex-initial md:p-[16px]">
         <h4 className="m-0 p-0">
           <div className="md:hidden">
             <MobileMarqueeTitle

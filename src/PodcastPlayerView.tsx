@@ -243,7 +243,7 @@ function PodcastPlayerView() {
           />
         </div>
 
-        <div className="relative z-20">
+        <div className="relative z-20 shrink-0 max-md:pb-[env(safe-area-inset-bottom,0px)]">
           <div className="absolute right-4 md:right-6 top-0 -translate-y-[calc(50%+4rem)] md:-translate-y-1/2 z-10">
             <PodcastControlButtons
               isPlaying={isPlaying}
