@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import EmptyState from "./components/EmptyState";
-import ErrorMessage from "./components/ErrorMessage";
+import ErrorPage from "./components/ErrorPage";
 import Header from "./components/Header";
 import InfoModal from "./components/InfoModal";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -183,12 +183,7 @@ function PodcastPlayerView() {
 
   const currentPodcast = EPISODES[currentPodcastIndex];
   if (!currentPodcast) {
-    return (
-      <ErrorMessage
-        error="Episode not found."
-        onRetry={() => navigate(`/episode/${EPISODES[0]!.slug}`, { replace: true })}
-      />
-    );
+    return <ErrorPage detail="Episode not found." />;
   }
 
   const nextPodcastItem =

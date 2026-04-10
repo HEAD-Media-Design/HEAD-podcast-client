@@ -37,27 +37,50 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
     const audioRef = useRef<HTMLAudioElement>(null);
     const isPlayingRef = useRef(isPlaying);
     isPlayingRef.current = isPlaying;
+    const onResumeBeforePlayRef = useRef(onResumeBeforePlay);
+    onResumeBeforePlayRef.current = onResumeBeforePlay;
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
 
     useEffect(() => {
-      if (audioRef.current) {
-        audioRef.current.src = audioUrl;
-        audioRef.current.load();
+      const el = audioRef.current;
+      if (!el) return;
+
+      el.src = audioUrl;
+      el.load();
+
+      if (!isPlayingRef.current) return;
+
+      let cancelled = false;
+
+      const startPlayback = async () => {
+        if (cancelled || !isPlayingRef.current || !audioRef.current) return;
+        try {
+          await onResumeBeforePlayRef.current?.();
+          if (cancelled || !isPlayingRef.current || !audioRef.current) return;
+          await audioRef.current.play();
+        } catch (err) {
+          if (!cancelled) onErrorRef.current?.(err);
+        }
+      };
+
+      // After load(), rely on canplay — the JSX onCanPlay handler can miss if the
+      // event already fired or behaves inconsistently across browsers when src changes.
+      if (el.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        void startPlayback();
+      } else {
+        el.addEventListener("canplay", startPlayback, { once: true });
       }
+
+      return () => {
+        cancelled = true;
+        el.removeEventListener("canplay", startPlayback);
+      };
     }, [audioUrl]);
 
     useEffect(() => {
       onAudioElementReady?.(audioRef.current ?? null);
     }, [audioUrl, onAudioElementReady]);
-
-    const handleCanPlay = async () => {
-      if (!isPlayingRef.current || !audioRef.current) return;
-      try {
-        await onResumeBeforePlay?.();
-        await audioRef.current.play();
-      } catch (err) {
-        onError?.(err);
-      }
-    };
 
     const handleError = () => {
       const el = audioRef.current;
@@ -108,7 +131,6 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
     return (
       <audio
         ref={audioRef}
-        onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}

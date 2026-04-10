@@ -100,8 +100,8 @@
   .podcast-controls-title-marquee-track {
     display: flex;
     width: max-content;
-    animation: podcast-controls-title-marquee var(--marquee-duration, 18s) linear
-      infinite;
+    animation: podcast-controls-title-marquee var(--marquee-duration, 18s)
+      linear infinite;
   }
 
   .podcast-controls-title-marquee-track.is-marquee-paused {
