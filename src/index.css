@@ -14,6 +14,11 @@
 
 /* Custom styles for minimalist design */
 @layer base {
+  /* Reduce rubber-band bounce + pull-to-refresh when dragging past scroll bounds (mobile). */
+  html {
+    overscroll-behavior: none;
+  }
+
   body {
     font-family:
       -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -23,6 +28,11 @@
     -moz-osx-font-smoothing: grayscale;
     color: black;
     margin: 0;
+    overscroll-behavior: none;
+  }
+
+  #root {
+    overscroll-behavior: none;
   }
 
   * {
