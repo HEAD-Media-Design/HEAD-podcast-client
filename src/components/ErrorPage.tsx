@@ -65,7 +65,9 @@ function ErrorPage({ detail }: ErrorPageProps) {
         </div>
       </div>
 
-      {isInfoOpen ? <InfoModal /> : null}
+      {isInfoOpen ? (
+        <InfoModal onClose={() => setIsInfoOpen(false)} />
+      ) : null}
     </div>
   );
 }

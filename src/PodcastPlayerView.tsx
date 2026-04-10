@@ -275,7 +275,9 @@ function PodcastPlayerView() {
             />
           </div>
         </div>
-        {isInfoOpen && <InfoModal />}
+        {isInfoOpen && (
+          <InfoModal onClose={() => setIsInfoOpen(false)} />
+        )}
         <PlaylistSidebar
           isOpen={isPlaylistOpen}
           onClose={() => setIsPlaylistOpen(false)}

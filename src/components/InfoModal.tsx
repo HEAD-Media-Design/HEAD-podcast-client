@@ -1,4 +1,22 @@
-function InfoModal() {
+import { useEffect } from "react";
+
+interface InfoModalProps {
+  onClose?: () => void;
+}
+
+function InfoModal({ onClose }: InfoModalProps) {
+  useEffect(() => {
+    if (!onClose) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   return (
     <div className="absolute top-0 left-0 w-full h-full bg-[#003FADEB] text-white z-50 overflow-auto">
       {/* Content */}
