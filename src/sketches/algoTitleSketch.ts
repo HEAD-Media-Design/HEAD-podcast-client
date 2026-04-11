@@ -28,12 +28,17 @@ type PointDef = {
   ny: number;
 };
 
-export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (p, getProps) => {
+export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
+  p,
+  getProps,
+) => {
   let fontPoints: p5.Font | null = null;
   let allPoints: PointDef[] = [];
   const cp = ["#0022ff"];
 
   let fontSize = 200;
+  /** Pre-fit target size for the active layout; reset on resize before `fitFontSizeToRef`. */
+  let layoutTargetFontSize = 200;
   let lines: LineDef[] = [];
   let sampleFactorValues: number[] = [];
 
@@ -65,99 +70,160 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (p, getProps) => 
     ];
   }
 
+  /** Extra horizontal gap after each glyph (letter-spacing). */
+  function letterTracking() {
+    return fontSize * (currentLayout === "mobile" ? 0.052 : 0.085);
+  }
+
+  /** Extra width for space characters so word gaps (e.g. Algo World) read clearly. */
+  function wordSpaceExtra() {
+    return fontSize * (currentLayout === "mobile" ? 0.14 : 0.22);
+  }
+
+  /** Shrink font until every line fits in ref width and the stack fits in ref height. */
+  function fitFontSizeToRef() {
+    if (!fontPoints) return;
+    const minFs = currentLayout === "mobile" ? 100 : 148;
+    const maxW = refWidth * 0.86;
+    const maxH = refHeight * 0.8;
+    p.textFont(fontPoints);
+    while (fontSize > minFs) {
+      p.textSize(fontSize);
+      const lh = fontSize * 1.22;
+      let maxLineW = 0;
+      for (const line of lines) {
+        maxLineW = Math.max(maxLineW, getKernedTextWidth(line.text));
+      }
+      const stackH = lines.length * lh + fontSize * 0.9;
+      if (maxLineW <= maxW && stackH <= maxH) break;
+      fontSize -= 3;
+    }
+    p.textSize(fontSize);
+  }
+
+  /** Move all glyph points so the blob is centred in the ref rectangle. */
+  function centerPointCloudInRef() {
+    if (allPoints.length === 0) return;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const pt of allPoints) {
+      minX = Math.min(minX, pt.x);
+      maxX = Math.max(maxX, pt.x);
+      minY = Math.min(minY, pt.y);
+      maxY = Math.max(maxY, pt.y);
+    }
+    const pad = fontSize * 0.2;
+    minX -= pad;
+    maxX += pad;
+    minY -= pad;
+    maxY += pad;
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    const dx = refWidth / 2 - cx;
+    const dy = refHeight / 2 - cy;
+    for (const pt of allPoints) {
+      pt.x += dx;
+      pt.y += dy;
+    }
+  }
+
   function buildTextLayout() {
     if (!fontPoints) return;
+    p.textFont(fontPoints);
+    p.textSize(fontSize);
     allPoints = [];
-    const lineHeight = fontSize * 1.1;
-    const totalHeight = lines.length * lineHeight;
-    const startY = (refHeight - totalHeight) / 2 + fontSize * 0.7;
+    const lineHeight = fontSize * 1.22;
+    const firstBaseline = fontSize * 0.92;
+    const track = letterTracking();
 
-    let currentY = startY;
+    let lineIdx = 0;
     for (const line of lines) {
       const lineWidth = getKernedTextWidth(line.text);
       line.x = (refWidth - lineWidth) / 2;
-      line.y = currentY;
-      currentY += lineHeight;
+      line.y = firstBaseline + lineIdx * lineHeight;
+      lineIdx++;
     }
 
-    const minDistanceSq = currentLayout === "mobile" ? 9 : 4;
+    /* Larger = fewer points per letter → less muddy overlap between adjacent glyphs. */
+    const minDistanceSq = currentLayout === "mobile" ? 14 : 10;
     let charGlobalIndex = 0;
 
     for (const line of lines) {
       let currentX = line.x ?? 0;
-      let prevChar = "";
 
       for (let i = 0; i < line.text.length; i++) {
         const char = line.text[i]!;
-        currentX += getPairKerning(prevChar, char);
-
-        if (char !== " ") {
-          const randomSF = p.random(sampleFactorValues);
-          const growthFactor = p.random(0.5, 2.0);
-          p.textSize(fontSize);
-          const rawPoints = fontPoints.textToPoints(char, currentX, line.y!, {
-            sampleFactor: randomSF,
-          }) as { x: number; y: number }[];
-
-          const filteredPoints: { x: number; y: number }[] = [];
-          for (const pt of rawPoints) {
-            let isTooClose = false;
-            for (const accepted of filteredPoints) {
-              const dx = pt.x - accepted.x;
-              const dy = pt.y - accepted.y;
-              if (dx * dx + dy * dy < minDistanceSq) {
-                isTooClose = true;
-                break;
-              }
-            }
-            if (!isTooClose) filteredPoints.push(pt);
-          }
-
-          let centerX = 0;
-          let centerY = 0;
-          for (const pt of filteredPoints) {
-            centerX += pt.x;
-            centerY += pt.y;
-          }
-          if (filteredPoints.length > 0) {
-            centerX /= filteredPoints.length;
-            centerY /= filteredPoints.length;
-          }
-
-          for (const pt of filteredPoints) {
-            const dx = pt.x - centerX;
-            const dy = pt.y - centerY;
-            const dist = Math.hypot(dx, dy) || 1;
-            allPoints.push({
-              x: pt.x,
-              y: pt.y,
-              factor: growthFactor,
-              letterIndex: charGlobalIndex,
-              nx: dx / dist,
-              ny: dy / dist,
-            });
-          }
-          charGlobalIndex++;
+        if (char === " ") {
+          currentX += p.textWidth(char) + wordSpaceExtra() + track;
+          continue;
         }
-        currentX += p.textWidth(char);
-        prevChar = char;
+
+        const randomSF = p.random(sampleFactorValues);
+        const growthFactor = p.random(0.5, 2.0);
+        p.textSize(fontSize);
+        const rawPoints = fontPoints.textToPoints(char, currentX, line.y!, {
+          sampleFactor: randomSF,
+        }) as { x: number; y: number }[];
+
+        const filteredPoints: { x: number; y: number }[] = [];
+        for (const pt of rawPoints) {
+          let isTooClose = false;
+          for (const accepted of filteredPoints) {
+            const dx = pt.x - accepted.x;
+            const dy = pt.y - accepted.y;
+            if (dx * dx + dy * dy < minDistanceSq) {
+              isTooClose = true;
+              break;
+            }
+          }
+          if (!isTooClose) filteredPoints.push(pt);
+        }
+
+        let centerX = 0;
+        let centerY = 0;
+        for (const pt of filteredPoints) {
+          centerX += pt.x;
+          centerY += pt.y;
+        }
+        if (filteredPoints.length > 0) {
+          centerX /= filteredPoints.length;
+          centerY /= filteredPoints.length;
+        }
+
+        for (const pt of filteredPoints) {
+          const dx = pt.x - centerX;
+          const dy = pt.y - centerY;
+          const dist = Math.hypot(dx, dy) || 1;
+          allPoints.push({
+            x: pt.x,
+            y: pt.y,
+            factor: growthFactor,
+            letterIndex: charGlobalIndex,
+            nx: dx / dist,
+            ny: dy / dist,
+          });
+        }
+        charGlobalIndex++;
+
+        currentX += p.textWidth(char) + track;
       }
     }
-  }
 
-  function getPairKerning(prevChar: string, char: string) {
-    if (prevChar === "i" && char === "n") return -5;
-    if (prevChar === "W" && char === "o") return -15;
-    return 0;
+    centerPointCloudInRef();
   }
 
   function getKernedTextWidth(textValue: string) {
+    const track = letterTracking();
     let widthValue = 0;
-    let prevChar = "";
     for (let i = 0; i < textValue.length; i++) {
       const char = textValue[i]!;
-      widthValue += getPairKerning(prevChar, char) + p.textWidth(char);
-      prevChar = char;
+      if (char === " ") {
+        widthValue += p.textWidth(char) + wordSpaceExtra() + track;
+      } else {
+        widthValue += p.textWidth(char) + track;
+      }
     }
     return widthValue;
   }
@@ -171,27 +237,30 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (p, getProps) => 
       if (currentLayout === "mobile") {
         mobileIdlePulseEnabled = true;
         mobilePulsePhase = 0;
-        refWidth = 800;
-        refHeight = 1200;
+        refWidth = 960;
+        refHeight = 1500;
         lines = [
           { text: "Exploring" },
           { text: "the" },
           { text: "Algo" },
           { text: "World" },
         ];
-        fontSize = 150;
+        layoutTargetFontSize = 198;
+        fontSize = layoutTargetFontSize;
         hoverExtraLayers = 20;
       } else {
         mobileIdlePulseEnabled = false;
         refWidth = 1600;
         refHeight = 900;
         lines = [{ text: "Exploring the" }, { text: "Algo World" }];
-        fontSize = 220;
+        layoutTargetFontSize = 252;
+        fontSize = layoutTargetFontSize;
         hoverExtraLayers = 17;
       }
 
       p.textFont(fontPoints!);
       p.textSize(fontSize);
+      fitFontSizeToRef();
       buildTextLayout();
     }
   }
@@ -249,10 +318,20 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (p, getProps) => 
             p.rectMode(p.CENTER);
             checkLayoutAndBuild();
           },
-          (err: unknown) => console.error("algoTitleSketch: font load failed", err),
+          (err: unknown) =>
+            console.error("algoTitleSketch: font load failed", err),
         );
       },
     );
+  };
+
+  (p as unknown as { windowResized?: () => void }).windowResized = () => {
+    if (!fontPoints) return;
+    fontSize = layoutTargetFontSize;
+    p.textFont(fontPoints);
+    p.textSize(fontSize);
+    fitFontSizeToRef();
+    buildTextLayout();
   };
 
   p.mousePressed = () => {
@@ -280,8 +359,10 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (p, getProps) => 
     canvasLayer.push();
     canvasLayer.translate(p.width / 2, p.height / 2);
 
-    const scalePadding = currentLayout === "mobile" ? 1.03 : 0.95;
-    const scaleFactor = p.min(p.width / refWidth, p.height / refHeight) * scalePadding;
+    /* Always ≤1: entire ref (with centred text) fits inside the canvas — no overflow clip. */
+    const scalePadding = currentLayout === "mobile" ? 0.94 : 0.96;
+    const scaleFactor =
+      p.min(p.width / refWidth, p.height / refHeight) * scalePadding;
     canvasLayer.scale(scaleFactor);
     canvasLayer.translate(-refWidth / 2, -refHeight / 2);
 
@@ -340,7 +421,10 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (p, getProps) => 
       const depthFactor = p.map(i, 0, totalMaxLayers, 1.2, 0.2);
       const iPow = p.pow(i, offsetExponent);
       const combinedSize =
-        baseSize * (1 + iPow * offsetMultiplier) * pointSizeScale * layerVisibility;
+        baseSize *
+        (1 + iPow * offsetMultiplier) *
+        pointSizeScale *
+        layerVisibility;
       const combinedOffset = iPow * 0.25 * hoverMultiplier;
 
       const currentLayerColors = cpColors.map((c) => {
