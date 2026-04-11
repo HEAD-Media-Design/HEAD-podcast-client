@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 
 import NextButton from "./NextButton";
 import P5Canvas from "./P5Canvas";
@@ -27,6 +27,14 @@ interface PodcastMainContentProps {
 
 const DEFAULT_TRANSCRIPT =
   "Hi folks, welcome to Supernova, where we discuss algorithms beyond us. I'm your host Peter Ha and I'll be talking about mobile photography and how we select and manage photos.";
+
+const SWIPE_MIN_PX = 56;
+/** Require horizontal movement to dominate vertical (avoid triggering while scrolling transcript). */
+const SWIPE_HORIZONTAL_RATIO = 1.25;
+
+function isMobileViewport() {
+  return typeof window !== "undefined" && window.innerWidth < 768;
+}
 
 function TranscriptBlocks({
   blocks,
@@ -77,6 +85,38 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   outputLatency,
   playbackOrderIndex,
 }) => {
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!isMobileViewport()) return;
+    const t = e.touches[0];
+    if (!t) return;
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
+  }, []);
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isMobileViewport()) return;
+      const start = touchStartRef.current;
+      touchStartRef.current = null;
+      if (!start) return;
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const dx = t.clientX - start.x;
+      const dy = t.clientY - start.y;
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      if (absX < SWIPE_MIN_PX || absX < absY * SWIPE_HORIZONTAL_RATIO) return;
+      if (dx < 0) onPrevPodcast();
+      else onNextPodcast();
+    },
+    [onPrevPodcast, onNextPodcast],
+  );
+
+  const onTouchCancel = useCallback(() => {
+    touchStartRef.current = null;
+  }, []);
+
   const transcriptBlocks = useMemo(() => {
     const plain = transcriptToPlainText(currentPodcast.transcript).trim();
     if (plain.length === 0) return transcriptToBlocks(DEFAULT_TRANSCRIPT);
@@ -125,7 +165,12 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   const nextPromptOpen = Boolean(nextPodcast && showNextPrompt);
 
   return (
-    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden  md:flex-row">
+    <div
+      className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden md:flex-row"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchCancel}
+    >
       {/* Left: p5 only (desktop ~50%; mobile white band per mock) */}
       <div className="relative flex h-[min(42vh,250px)] min-h-[160px] w-full shrink-0 items-center justify-center overflow-hidden border-b-[3px] border-black md:h-full md:min-h-0 md:w-3/4 md:shrink-0 md:border-b-0 md:border-black">
         <P5Canvas
