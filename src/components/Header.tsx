@@ -52,10 +52,10 @@ const Header: React.FC<HeaderProps> = ({ onInfoClick, isInfoOpen }) => {
         <div className="flex h-[65px] w-[64px] items-center justify-center absolute right-35">
           <SupernovaLogo className="h-full w-full max-h-full max-w-full object-contain" />
         </div>
-        <div className="flex flex-1 max-w-fit">
+        <div className="flex flex-1 max-w-fit items-center justify-end">
           <button
             type="button"
-            className="shrink-0 cursor-pointer bg-black px-3 py-1 pl-[calc(12px+5.4px)] font-spline-sans-mono text-[18px] font-semibold leading-[18px] tracking-[5.4px] text-white"
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center bg-black px-2 py-1 font-spline-sans-mono text-[18px] font-semibold leading-[18px] tracking-[5.4px] text-white md:px-3"
             onClick={onInfoClick}
             aria-expanded={isInfoOpen}
             aria-label={isInfoOpen ? "Close information" : "Open information"}
