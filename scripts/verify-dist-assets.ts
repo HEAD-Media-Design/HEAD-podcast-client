@@ -44,6 +44,7 @@ async function assertFile(
 
 async function main() {
   await assertFile("index.html", "any");
+  await assertFile("sitemap.xml", "any");
   await assertFile("og-image.png", "png");
   await assertFile("og-image.jpg", "jpeg");
   await assertFile("favicon.svg", "any");

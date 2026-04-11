@@ -18,6 +18,7 @@ const ROOT_STATIC_FROM_PUBLIC = [
   "favicon.svg",
   "robots.txt",
   "podcast.rss",
+  "sitemap.xml",
 ] as const;
 
 async function copyRootStaticFromPublic() {

@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://supernova-podcast.pages.dev/sitemap.xml
