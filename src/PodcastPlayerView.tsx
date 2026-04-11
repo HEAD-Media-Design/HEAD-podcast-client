@@ -46,6 +46,9 @@ function PodcastPlayerView() {
   );
   const [audioError, setAudioError] = useState<string | null>(null);
   const [playbackEnded, setPlaybackEnded] = useState(false);
+  /** After first successful play, main viz switches from idle title sketch to audio-reactive. */
+  const [hasUserPlayedAudio, setHasUserPlayedAudio] = useState(false);
+  const [playButtonHovered, setPlayButtonHovered] = useState(false);
 
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
   const {
@@ -218,6 +221,10 @@ function PodcastPlayerView() {
     setPlaybackEnded(false);
   }, [currentPodcastIndex]);
 
+  useEffect(() => {
+    if (isPlaying) setHasUserPlayedAudio(true);
+  }, [isPlaying]);
+
   if (!EPISODES.length) {
     return <EmptyState />;
   }
@@ -297,6 +304,8 @@ function PodcastPlayerView() {
                   currentTime={currentTime}
                   outputLatency={outputLatency}
                   playbackOrderIndex={currentPodcastIndex}
+                  hasUserPlayedAudio={hasUserPlayedAudio}
+                  isPlayButtonHovered={playButtonHovered}
                 />
               ) : (
                 <div className="h-full min-h-0 bg-white" aria-hidden />
@@ -309,6 +318,7 @@ function PodcastPlayerView() {
                 isPlaying={isPlaying}
                 onTogglePlay={togglePlay}
                 onListClick={() => setIsPlaylistOpen(true)}
+                onPlayButtonHoverChange={setPlayButtonHovered}
               />
             </div>
             <PodcastControls
@@ -323,6 +333,7 @@ function PodcastPlayerView() {
               audioError={audioError}
               onDismissAudioError={() => setAudioError(null)}
               renderButtonsSeparately
+              onPlayButtonHoverChange={setPlayButtonHovered}
             />
           </div>
           <div

@@ -6,6 +6,7 @@ import { episodeBodyText } from "../data/episodes";
 import type { Episode } from "../schemas/episode";
 import { transcriptToBlocks, transcriptToPlainText } from "../lib/transcript";
 import PrevButton from "./PrevButton";
+import { algoTitleSketch } from "../sketches/algoTitleSketch";
 import { audioReactiveSketch } from "../sketches/audioReactiveSketch";
 
 interface PodcastMainContentProps {
@@ -23,6 +24,9 @@ interface PodcastMainContentProps {
   outputLatency: number;
   /** Playlist index (0-based); p5 viz cycles theme 1–2–3 by this order. */
   playbackOrderIndex: number;
+  /** After first play, left panel uses audio-reactive sketch instead of idle title. */
+  hasUserPlayedAudio: boolean;
+  isPlayButtonHovered: boolean;
 }
 
 const DEFAULT_TRANSCRIPT =
@@ -84,6 +88,8 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   currentTime,
   outputLatency,
   playbackOrderIndex,
+  hasUserPlayedAudio,
+  isPlayButtonHovered,
 }) => {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -150,6 +156,11 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
     ],
   );
 
+  const idleTitleProps = useMemo(
+    () => ({ isPlayButtonHovered }),
+    [isPlayButtonHovered],
+  );
+
   const aboutHeading = (
     <p className="font-spline-sans text-[9px] md:text-[12px] font-bold uppercase tracking-[0.14em] text-black ">
       ABOUT
@@ -164,6 +175,12 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
 
   const nextPromptOpen = Boolean(nextPodcast && showNextPrompt);
 
+  const sketchShellClass =
+    "relative flex w-full shrink-0 items-center justify-center overflow-hidden border-b-[3px] border-black md:h-full md:min-h-0 md:border-b-0 md:border-black " +
+    (hasUserPlayedAudio
+      ? "h-[min(42vh,250px)] min-h-[160px] md:w-3/4 md:shrink-0"
+      : "min-h-[min(42vh,250px)] flex-1 md:w-full md:flex-1");
+
   return (
     <div
       className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden md:flex-row"
@@ -171,13 +188,21 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
       onTouchEnd={onTouchEnd}
       onTouchCancel={onTouchCancel}
     >
-      {/* Left: p5 only (desktop ~50%; mobile white band per mock) */}
-      <div className="relative flex h-[min(42vh,250px)] min-h-[160px] w-full shrink-0 items-center justify-center overflow-hidden border-b-[3px] border-black md:h-full md:min-h-0 md:w-3/4 md:shrink-0 md:border-b-0 md:border-black">
-        <P5Canvas
-          sketch={audioReactiveSketch}
-          props={p5Props}
-          className="h-full w-full"
-        />
+      {/* Left: p5 — full width until first play; after play, ~3/4 + transcript column */}
+      <div className={sketchShellClass}>
+        {hasUserPlayedAudio ? (
+          <P5Canvas
+            sketch={audioReactiveSketch}
+            props={p5Props}
+            className="h-full w-full"
+          />
+        ) : (
+          <P5Canvas
+            sketch={algoTitleSketch}
+            props={idleTitleProps}
+            className="h-full w-full"
+          />
+        )}
       </div>
 
       {/* Prev / Next: floating on all breakpoints (mobile + desktop) */}
@@ -190,13 +215,16 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
         className="absolute right-2 top-1/2 z-30 -translate-y-1/2 md:right-5"
       />
 
-      {/* 데스크톱: absolute로 화면(메인) 오른쪽 절반 — flex에서 빠지므로 남는 폭용 스페이서 필요 */}
-      <div
-        className="hidden min-h-0 md:block md:h-full md:min-w-0 md:flex-1"
-        aria-hidden
-      />
+      {/* 데스크톱: transcript가 absolute일 때만 flex 균형용 스페이서 */}
+      {hasUserPlayedAudio && (
+        <div
+          className="hidden min-h-0 md:block md:h-full md:min-w-0 md:flex-1"
+          aria-hidden
+        />
+      )}
 
-      {/* 모바일: 스케치 아래 flex-1 / md: 오른쪽 50% absolute */}
+      {/* Transcript + about: only after first play (idle title uses full width) */}
+      {hasUserPlayedAudio && (
       <div className="transcript-panel relative z-10 min-h-0 h-full w-full flex-1 bg-transparent text-left md:absolute md:inset-y-0 md:w-1/2 md:right-0 md:flex-none">
         {!nextPromptOpen && (
           <div className="transcript-panel-inner px-12 pb-6 pt-[16px] md:px-8 md:py-10 md:pr-10 lg:px-12 lg:pr-14">
@@ -245,6 +273,7 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

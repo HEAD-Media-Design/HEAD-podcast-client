@@ -12,6 +12,8 @@ export interface PodcastControlButtonsProps {
   isPlaying: boolean;
   onTogglePlay: () => void;
   onListClick?: () => void;
+  /** For idle title p5 sketch hover parity with original “listen” button. */
+  onPlayButtonHoverChange?: (hovered: boolean) => void;
 }
 
 /** List + Play buttons only; used fixed in layout so they don’t animate with the bar */
@@ -19,6 +21,7 @@ export const PodcastControlButtons: React.FC<PodcastControlButtonsProps> = ({
   isPlaying,
   onTogglePlay,
   onListClick,
+  onPlayButtonHoverChange,
 }) => (
   <div className="flex flex-col md:flex-row items-center gap-2 md:gap-[17px]">
     <button
@@ -50,6 +53,8 @@ export const PodcastControlButtons: React.FC<PodcastControlButtonsProps> = ({
         e.stopPropagation();
         onTogglePlay();
       }}
+      onPointerEnter={() => onPlayButtonHoverChange?.(true)}
+      onPointerLeave={() => onPlayButtonHoverChange?.(false)}
       className="flex h-[48px] w-[48px] cursor-pointer items-center justify-center rounded-full border-[3px] border-black bg-white md:h-[88px] md:w-[88px] md:border-5 hover:bg-black hover:text-white transition-colors"
     >
       {isPlaying ? (
@@ -298,6 +303,7 @@ interface PodcastControlsProps {
   onDismissAudioError?: () => void;
   /** When true, buttons are not rendered here (use PodcastControlButtons in a fixed layer) */
   renderButtonsSeparately?: boolean;
+  onPlayButtonHoverChange?: (hovered: boolean) => void;
 }
 
 const MARQUEE_SPEED_PX_PER_SEC = 28;
@@ -314,6 +320,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
   audioError,
   onDismissAudioError,
   renderButtonsSeparately = false,
+  onPlayButtonHoverChange,
 }) => {
   const [marqueeOverflow, setMarqueeOverflow] = useState(false);
   const [marqueeDistancePx, setMarqueeDistancePx] = useState(0);
@@ -479,6 +486,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
               isPlaying={isPlaying}
               onTogglePlay={onTogglePlay}
               onListClick={onListClick}
+              onPlayButtonHoverChange={onPlayButtonHoverChange}
             />
           </div>
         )}
