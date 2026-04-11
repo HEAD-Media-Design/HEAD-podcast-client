@@ -245,11 +245,11 @@ function PodcastControlsContentLayer({
 }: PodcastControlsContentLayerProps) {
   return (
     <div
-      className={`flex items-start justify-between md:px-6 max-md:pl-[max(16px,env(safe-area-inset-left,0px))] max-md:pr-[max(16px,env(safe-area-inset-right,0px))] max-md:pb-2.5 ${
+      className={`flex items-start justify-between px-0 md:px-6 max-md:pl-[max(16px,env(safe-area-inset-left,0px))] max-md:pr-[max(16px,env(safe-area-inset-right,0px))] max-md:pb-2.5 ${
         isOverlay ? "text-white" : "text-black"
       }`}
     >
-      <div className="min-w-0 flex-1 p-2 text-left md:flex-initial md:p-[16px]">
+      <div className="min-w-0 flex-1 p-2 text-left md:flex-initial md:p-[16px] px-0">
         <h4 className="m-0 p-0">
           <div className="md:hidden">
             <MobileMarqueeTitle
@@ -446,7 +446,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
         </div>
       )}
       <div
-        className="relative cursor-pointer border-t border-black border-t-[3px] md:border-t-[5px]"
+        className="relative cursor-pointer border-black border-t-[3px] md:border-t-[5px]"
         onClick={handleProgressClick}
         role="progressbar"
         aria-valuenow={duration > 0 ? currentTime : 0}

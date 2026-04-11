@@ -11,6 +11,23 @@ import { loadEpisodeJsonFiles } from "./content-utils.ts";
 const repoRoot = path.join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const distIndex = path.join(repoRoot, "dist", "index.html");
 
+/** Re-copy from `public/` so root URLs like `/og-image.png` always exist in `dist/` (Vite copies too; this guards CI/CD edge cases). */
+const ROOT_STATIC_FROM_PUBLIC = [
+  "og-image.png",
+  "og-image.jpg",
+  "favicon.svg",
+  "robots.txt",
+  "podcast.rss",
+] as const;
+
+async function copyRootStaticFromPublic() {
+  await Promise.all(
+    ROOT_STATIC_FROM_PUBLIC.map((name) =>
+      copyFile(path.join(repoRoot, "public", name), path.join(repoRoot, "dist", name)),
+    ),
+  );
+}
+
 async function main() {
   const episodes = await loadEpisodeJsonFiles();
   for (const ep of episodes) {
@@ -18,8 +35,12 @@ async function main() {
     await mkdir(dir, { recursive: true });
     await copyFile(distIndex, path.join(dir, "index.html"));
   }
+  await copyRootStaticFromPublic();
   console.log(
     `Copied SPA shell to dist/episode/<slug>/index.html (${episodes.length} routes).`,
+  );
+  console.log(
+    `Re-copied root static assets: ${ROOT_STATIC_FROM_PUBLIC.join(", ")}`,
   );
 }
 

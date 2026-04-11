@@ -176,7 +176,7 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
   const nextPromptOpen = Boolean(nextPodcast && showNextPrompt);
 
   const sketchShellClass =
-    "relative flex w-full shrink-0 items-center justify-center overflow-hidden border-b-[3px] border-black md:h-full md:min-h-0 md:border-b-0 md:border-black " +
+    "relative flex w-full shrink-0 items-center justify-center overflow-hidden md:h-full md:min-h-0 " +
     (hasUserPlayedAudio
       ? "h-[min(42vh,250px)] min-h-[160px] md:w-3/4 md:shrink-0"
       : "min-h-[min(42vh,250px)] flex-1 md:w-full md:flex-1");
@@ -225,54 +225,54 @@ const PodcastMainContent: React.FC<PodcastMainContentProps> = ({
 
       {/* Transcript + about: only after first play (idle title uses full width) */}
       {hasUserPlayedAudio && (
-      <div className="transcript-panel relative z-10 min-h-0 h-full w-full flex-1 bg-transparent text-left md:absolute md:inset-y-0 md:w-1/2 md:right-0 md:flex-none">
-        {!nextPromptOpen && (
-          <div className="transcript-panel-inner px-12 pb-6 pt-[16px] md:px-8 md:py-10 md:pr-10 lg:px-12 lg:pr-14">
-            <div className="md:grid md:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] md:gap-x-[40px] lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
-              <aside className="mb-8 hidden text-left md:mb-0 md:block md:pt-1">
-                <h2 className="mb-[22px] font-spline-sans-mono text-[36px] font-bold text-black md:text-4xl lg:text-[2.75rem]">
-                  Transcript
-                </h2>
-                {aboutHeading}
-                {aboutParagraph}
-              </aside>
-
-              <div className="min-w-0 md:pt-1">
-                <div className="mb-8 md:hidden">
+        <div className="transcript-panel relative z-10 min-h-0 h-full w-full flex-1 bg-transparent text-left md:absolute md:inset-y-0 md:w-1/2 md:right-0 md:flex-none">
+          {!nextPromptOpen && (
+            <div className="transcript-panel-inner px-12 pb-6 pt-[16px] md:px-8 md:py-10 md:pr-10 lg:px-12 lg:pr-14">
+              <div className="md:grid md:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] md:gap-x-[40px] lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
+                <aside className="mb-8 hidden text-left md:mb-0 md:block md:pt-1">
+                  <h2 className="mb-[22px] font-spline-sans-mono text-[36px] font-bold text-black md:text-4xl lg:text-[2.75rem]">
+                    Transcript
+                  </h2>
                   {aboutHeading}
                   {aboutParagraph}
+                </aside>
+
+                <div className="min-w-0 md:pt-1">
+                  <div className="mb-8 md:hidden">
+                    {aboutHeading}
+                    {aboutParagraph}
+                  </div>
+                  <h2 className="mb-1 font-spline-sans-mono text-[36px] font-bold text-black md:mb-0 md:hidden">
+                    Transcript
+                  </h2>
+                  <TranscriptBlocks blocks={transcriptBlocks} />
                 </div>
-                <h2 className="mb-1 font-spline-sans-mono text-[36px] font-bold text-black md:mb-0 md:hidden">
-                  Transcript
-                </h2>
-                <TranscriptBlocks blocks={transcriptBlocks} />
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {nextPromptOpen && nextPodcast && (
-          <div
-            tabIndex={-1}
-            className="transcript-panel-inner text-left flex h-full justify-center min-h-0 w-full flex-col gap-6 px-15 outline-none md:gap-8 md:py-10 md:px-25"
-            aria-label="Next podcast"
-          >
-            <p className="font-spline-sans-mono text-2xl font-bold leading-tight text-black md:text-3xl">
-              {nextPodcast.title}
-            </p>
-            <p className="font-spline-sans text-[18px] font-normal leading-relaxed text-black md:text-base">
-              {nextPodcast.summary}
-            </p>
-            <button
-              type="button"
-              onClick={onPlayNext}
-              className="text-left w-fit cursor-pointer p-0 font-spline-sans-mono text-lg font-bold text-black underline md:text-xl"
+          {nextPromptOpen && nextPodcast && (
+            <div
+              tabIndex={-1}
+              className="transcript-panel-inner text-left flex h-full justify-center min-h-0 w-full flex-col gap-6 px-15 outline-none md:gap-8 md:py-10 md:px-25"
+              aria-label="Next podcast"
             >
-              Play
-            </button>
-          </div>
-        )}
-      </div>
+              <p className="font-spline-sans-mono text-2xl font-bold leading-tight text-black md:text-3xl">
+                {nextPodcast.title}
+              </p>
+              <p className="font-spline-sans text-[18px] font-normal leading-relaxed text-black md:text-base">
+                {nextPodcast.summary}
+              </p>
+              <button
+                type="button"
+                onClick={onPlayNext}
+                className="text-left w-fit cursor-pointer p-0 font-spline-sans-mono text-lg font-bold text-black underline md:text-xl"
+              >
+                Play
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
