@@ -92,22 +92,24 @@ function PodcastPlayerView() {
 
   const nextPodcast = () => {
     if (!EPISODES.length) return;
+    const continuePlayback = isPlaying;
     setShowNextPrompt(false);
     setCurrentTime(0);
     const next =
       currentPodcastIndex === EPISODES.length - 1 ? 0 : currentPodcastIndex + 1;
     goToEpisodeIndex(next);
-    setIsPlaying(true);
+    setIsPlaying(continuePlayback);
   };
 
   const prevPodcast = () => {
     if (!EPISODES.length) return;
+    const continuePlayback = isPlaying;
     setShowNextPrompt(false);
     setCurrentTime(0);
     const prev =
       currentPodcastIndex === 0 ? EPISODES.length - 1 : currentPodcastIndex - 1;
     goToEpisodeIndex(prev);
-    setIsPlaying(true);
+    setIsPlaying(continuePlayback);
   };
 
   const playNextPodcast = () => {
