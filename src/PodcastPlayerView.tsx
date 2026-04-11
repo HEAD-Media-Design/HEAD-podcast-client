@@ -17,6 +17,9 @@ import PodcastMainContent from "./components/PodcastMainContent";
 import { EPISODES } from "./data/episodes";
 import { useAudioLevel } from "./hooks/useAudioLevel";
 
+/** Matches shell `flex` open transition; main mounts after this so p5 doesn’t fight the layout tween. */
+const LAYOUT_OPEN_MS = 2000;
+
 function PodcastPlayerView() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -32,9 +35,12 @@ function PodcastPlayerView() {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [showNextPrompt, setShowNextPrompt] = useState(false);
-  const [animationStage, setAnimationStage] = useState<
-    "initial" | "center" | "final"
-  >("initial");
+  /** Fonts/layout ready; shell begins opening (starburst keeps spinning until `mainRevealReady`). */
+  const [siteReady, setSiteReady] = useState(false);
+  /** Shell open tween finished; starburst stops; main column mounts and fades in. */
+  const [mainRevealReady, setMainRevealReady] = useState(false);
+  /** After main mounts, next frame enables opacity transition (avoids skipped transition). */
+  const [mainEntered, setMainEntered] = useState(false);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
     null,
   );
@@ -70,19 +76,56 @@ function PodcastPlayerView() {
   }, [isConnected, isPlaying]);
 
   useEffect(() => {
-    const centerTimer = setTimeout(() => {
-      setAnimationStage("center");
-    }, 100);
+    let cancelled = false;
+    const waitForPaint = () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => resolve());
+        });
+      });
 
-    const finalTimer = setTimeout(() => {
-      setAnimationStage("final");
-    }, 1500);
+    const run = async () => {
+      try {
+        if (typeof document !== "undefined" && document.fonts?.ready) {
+          await document.fonts.ready;
+        }
+      } catch {
+        /* ignore */
+      }
+      await waitForPaint();
+      if (!cancelled) setSiteReady(true);
+    };
 
+    void run();
     return () => {
-      clearTimeout(centerTimer);
-      clearTimeout(finalTimer);
+      cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!siteReady) return;
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const delay = reduceMotion ? 0 : LAYOUT_OPEN_MS;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const rafId = requestAnimationFrame(() => {
+      timeoutId = window.setTimeout(() => setMainRevealReady(true), delay);
+    });
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
+  }, [siteReady]);
+
+  useEffect(() => {
+    if (!mainRevealReady) return;
+    let raf = 0;
+    raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => setMainEntered(true));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [mainRevealReady]);
 
   const goToEpisodeIndex = (index: number) => {
     const ep = EPISODES[index];
@@ -194,8 +237,21 @@ function PodcastPlayerView() {
       ? EPISODES[(currentPodcastIndex + 1) % EPISODES.length]
       : null;
 
+  /* duration must stay in sync with LAYOUT_OPEN_MS */
+  const shellTween =
+    "transition-[flex-grow,flex-basis] duration-[2000ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:duration-0";
+
+  const spacerLoading = `${shellTween} min-h-0 flex-1 basis-0 grow`;
+  const spacerReady = `${shellTween} h-0 min-h-0 shrink-0 grow-0 basis-0 overflow-hidden`;
+
+  const mainRailLoading = `${shellTween} h-0 min-h-0 shrink-0 grow-0 basis-0 overflow-hidden`;
+  const mainRailReady = `${shellTween} min-h-0 flex-1 basis-0 overflow-hidden`;
+
   return (
-    <div className="h-dvh-fallback flex flex-col bg-white overflow-hidden">
+    <div
+      className="h-dvh-fallback flex flex-col bg-white overflow-hidden"
+      aria-busy={!mainRevealReady}
+    >
       <AudioPlayer
         ref={audioPlayerRef}
         audioUrl={currentPodcast.audioUrl}
@@ -207,61 +263,54 @@ function PodcastPlayerView() {
         onResumeBeforePlay={resumeAudioContext}
         onAudioElementReady={setAudioElement}
       />
-      <div
-        className={`z-20 transition-transform duration-1000 ease-out bg-white ${
-          animationStage === "initial"
-            ? "opacity-0"
-            : animationStage === "center"
-              ? "translate-y-[calc(50dvh-65px)] md:translate-y-[calc(50dvh-150px)]"
-              : "translate-y-0"
-        }`}
-      >
-        <Header
-          onInfoClick={() => setIsInfoOpen(!isInfoOpen)}
-          isInfoOpen={isInfoOpen}
-        />
-      </div>
-
-      <div className="relative flex-1 flex flex-col h-full overflow-hidden">
-        <div
-          className={`flex-1 min-h-0 transition-opacity duration-500 ${
-            animationStage === "final" ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <PodcastMainContent
-            currentPodcast={currentPodcast}
-            nextPodcast={nextPodcastItem ?? null}
-            showNextPrompt={showNextPrompt}
-            onPrevPodcast={prevPodcast}
-            onNextPodcast={nextPodcast}
-            onPlayNext={playNextPodcast}
-            analyserRef={analyserRef}
-            simulatedLevelRef={simulatedLevelRef}
-            isConnected={isConnected}
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-            outputLatency={outputLatency}
-            playbackOrderIndex={currentPodcastIndex}
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="absolute inset-0 z-10 flex min-h-0 flex-col bg-white">
+          <div
+            className={siteReady ? spacerReady : spacerLoading}
+            aria-hidden
           />
-        </div>
-
-        <div className="relative z-20 shrink-0 max-md:pb-[env(safe-area-inset-bottom,0px)]">
-          <div className="absolute right-4 md:right-6 top-0 -translate-y-[calc(50%+4rem)] md:-translate-y-1/2 z-10">
-            <PodcastControlButtons
-              isPlaying={isPlaying}
-              onTogglePlay={togglePlay}
-              onListClick={() => setIsPlaylistOpen(true)}
+          <div className="z-20 shrink-0 bg-white">
+            <Header
+              onInfoClick={() => setIsInfoOpen(!isInfoOpen)}
+              isInfoOpen={isInfoOpen}
+              logoSpinning={!mainRevealReady}
             />
           </div>
-          <div
-            className={`transition-transform duration-1000 ease-out ${
-              animationStage === "initial"
-                ? "opacity-0"
-                : animationStage === "center"
-                  ? "-translate-y-[calc(50dvh-65px)] md:-translate-y-[calc(50dvh-150px)]"
-                  : "translate-y-0"
-            }`}
-          >
+          <div className={siteReady ? mainRailReady : mainRailLoading}>
+            <div
+              className={`h-full min-h-0 transition-opacity duration-[1800ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:duration-0 ${
+                mainEntered ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {mainRevealReady ? (
+                <PodcastMainContent
+                  currentPodcast={currentPodcast}
+                  nextPodcast={nextPodcastItem ?? null}
+                  showNextPrompt={showNextPrompt}
+                  onPrevPodcast={prevPodcast}
+                  onNextPodcast={nextPodcast}
+                  onPlayNext={playNextPodcast}
+                  analyserRef={analyserRef}
+                  simulatedLevelRef={simulatedLevelRef}
+                  isConnected={isConnected}
+                  isPlaying={isPlaying}
+                  currentTime={currentTime}
+                  outputLatency={outputLatency}
+                  playbackOrderIndex={currentPodcastIndex}
+                />
+              ) : (
+                <div className="h-full min-h-0 bg-white" aria-hidden />
+              )}
+            </div>
+          </div>
+          <div className="relative z-20 shrink-0 max-md:pb-[env(safe-area-inset-bottom,0px)]">
+            <div className="absolute right-4 md:right-6 top-0 -translate-y-[calc(50%+4rem)] md:-translate-y-1/2 z-10">
+              <PodcastControlButtons
+                isPlaying={isPlaying}
+                onTogglePlay={togglePlay}
+                onListClick={() => setIsPlaylistOpen(true)}
+              />
+            </div>
             <PodcastControls
               podcast={currentPodcast}
               isPlaying={isPlaying}
@@ -276,10 +325,12 @@ function PodcastPlayerView() {
               renderButtonsSeparately
             />
           </div>
+          <div
+            className={siteReady ? spacerReady : spacerLoading}
+            aria-hidden
+          />
         </div>
-        {isInfoOpen && (
-          <InfoModal onClose={() => setIsInfoOpen(false)} />
-        )}
+        {isInfoOpen && <InfoModal onClose={() => setIsInfoOpen(false)} />}
         <PlaylistSidebar
           isOpen={isPlaylistOpen}
           onClose={() => setIsPlaylistOpen(false)}

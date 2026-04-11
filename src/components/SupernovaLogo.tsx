@@ -1,4 +1,10 @@
-import React from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 type SupernovaLogoProps = {
   className?: string;
@@ -6,6 +12,19 @@ type SupernovaLogoProps = {
   spinning?: boolean;
   "aria-hidden"?: boolean | "true" | "false";
 };
+
+const COAST_MS = 520;
+
+function parseRotateDegFromComputedTransform(transform: string): number | null {
+  if (!transform || transform === "none") return 0;
+  const m = transform.match(/matrix\(([^)]+)\)/);
+  if (!m) return null;
+  const parts = m[1]!.split(",").map((s) => parseFloat(s.trim()));
+  if (parts.length < 4) return null;
+  const a = parts[0]!;
+  const b = parts[1]!;
+  return (Math.atan2(b, a) * 180) / Math.PI;
+}
 
 /**
  * Supernova mark SVG (117×120). Uses unique clip-path ids so multiple instances are safe.
@@ -17,15 +36,113 @@ export function SupernovaLogo({
 }: SupernovaLogoProps) {
   const uid = React.useId().replace(/:/g, "");
   const clipId = `supernova-clip-${uid}`;
+  const svgRef = useRef<SVGSVGElement>(null);
+  const captureSpinRef = useRef(false);
+  const [coast, setCoast] = useState<{ from: number; to: number } | null>(null);
+
+  if (spinning) {
+    captureSpinRef.current = true;
+  }
+
+  const showKeyframeSpin =
+    spinning || (captureSpinRef.current && coast === null);
+
+  useLayoutEffect(() => {
+    if (spinning) {
+      setCoast(null);
+      const el = svgRef.current;
+      if (el) {
+        el.style.transform = "";
+        el.style.transition = "";
+      }
+      return;
+    }
+    if (coast !== null) return;
+    if (!captureSpinRef.current) return;
+
+    const el = svgRef.current;
+    if (!el) return;
+
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      captureSpinRef.current = false;
+      el.style.transform = "";
+      el.style.transition = "";
+      return;
+    }
+
+    const angle =
+      parseRotateDegFromComputedTransform(getComputedStyle(el).transform) ?? 0;
+    captureSpinRef.current = false;
+    const mod = ((angle % 360) + 360) % 360;
+    const to = mod < 0.02 ? angle : angle + (360 - mod);
+    setCoast({ from: angle, to });
+  }, [spinning, coast]);
+
+  useEffect(() => {
+    if (!coast) return;
+    const el = svgRef.current;
+    if (!el) return;
+
+    el.style.transform = `rotate(${coast.from}deg)`;
+    el.style.transition = "none";
+    void el.getBoundingClientRect();
+
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      el.style.transition = `transform ${COAST_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+      raf2 = requestAnimationFrame(() => {
+        el.style.transform = `rotate(${coast.to}deg)`;
+      });
+    });
+
+    const finish = () => {
+      el.style.transform = "";
+      el.style.transition = "";
+      setCoast(null);
+    };
+
+    const onEnd = (ev: TransitionEvent) => {
+      if (ev.propertyName !== "transform") return;
+      el.removeEventListener("transitionend", onEnd);
+      finish();
+    };
+    el.addEventListener("transitionend", onEnd);
+    const fallback = window.setTimeout(finish, COAST_MS + 80);
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      el.removeEventListener("transitionend", onEnd);
+      window.clearTimeout(fallback);
+    };
+  }, [coast]);
 
   const hide = ariaHidden === true || ariaHidden === "true";
 
+  const coastStyle =
+    coast !== null
+      ? ({
+          transform: `rotate(${coast.from}deg)`,
+          transition: "none",
+          transformOrigin: "center",
+        } as CSSProperties)
+      : undefined;
+
   return (
     <svg
+      ref={svgRef}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 117 120"
       fill="none"
-      className={`block shrink-0 ${className} ${spinning ? "motion-safe:animate-spin" : ""}`.trim()}
+      style={coastStyle}
+      className={`origin-center block shrink-0 ${className} ${
+        showKeyframeSpin
+          ? "motion-safe:animate-[spin_2.75s_linear_infinite]"
+          : ""
+      }`.trim()}
       aria-hidden={hide ? true : undefined}
       role={hide ? undefined : "img"}
     >
