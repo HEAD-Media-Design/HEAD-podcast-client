@@ -3,10 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link
-      rel="canonical"
-      href="https://supernova-podcast.page.dev/"
-    />
+    <link rel="canonical" href="%VITE_SITE_URL%/" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
@@ -15,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Spline+Sans+Mono:ital,wght@0,300..700;1,300..700&family=Spline+Sans:wght@300..700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:ital,wght@0,300..700;1,300..700&family=Spline+Sans:wght@300..700&display=swap"
       rel="stylesheet"
     />
     <title>Supernova Podcast — by HEAD Media Design</title>
@@ -27,14 +24,11 @@
       rel="alternate"
       type="application/rss+xml"
       title="Supernova Podcast"
-      href="https://supernova-podcast.page.dev/podcast.rss"
+      href="%VITE_SITE_URL%/podcast.rss"
     />
     <!-- Open Graph / link preview (absolute URLs so crawlers resolve image + canonical) -->
     <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content="https://supernova-podcast.page.dev/"
-    />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
     <meta property="og:site_name" content="Supernova Podcast" />
     <meta
       property="og:title"
@@ -46,11 +40,11 @@
     />
     <meta
       property="og:image"
-      content="https://supernova-podcast.page.dev/og-image.jpg"
+      content="%VITE_SITE_URL%/og-image.jpg"
     />
     <meta
       property="og:image:secure_url"
-      content="https://supernova-podcast.page.dev/og-image.jpg"
+      content="%VITE_SITE_URL%/og-image.jpg"
     />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
@@ -69,14 +63,14 @@
     />
     <meta
       name="twitter:image"
-      content="https://supernova-podcast.page.dev/og-image.jpg"
+      content="%VITE_SITE_URL%/og-image.jpg"
     />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Supernova Podcast",
-        "url": "https://supernova-podcast.page.dev/",
+        "url": "%VITE_SITE_URL%/",
         "description": "Student podcasts from the Master Media Design theory seminar at HEAD–Genève: algorithms, machine learning, and design beyond us.",
         "publisher": {
           "@type": "EducationalOrganization",

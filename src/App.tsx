@@ -1,9 +1,12 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import EmptyState from "./components/EmptyState";
-import ErrorPage from "./components/ErrorPage";
+import LoadingSpinner from "./components/LoadingSpinner";
 import { EPISODES } from "./data/episodes";
-import PodcastPlayerView from "./PodcastPlayerView";
+
+const PodcastPlayerView = lazy(() => import("./PodcastPlayerView"));
+const ErrorPage = lazy(() => import("./components/ErrorPage"));
 
 function App() {
   if (!EPISODES.length) {
@@ -14,14 +17,16 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={<Navigate to={`/episode/${firstSlug}`} replace />}
-        />
-        <Route path="/episode/:slug" element={<PodcastPlayerView />} />
-        <Route path="*" element={<ErrorPage />} />
-      </Routes>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route
+            path="/"
+            element={<Navigate to={`/episode/${firstSlug}`} replace />}
+          />
+          <Route path="/episode/:slug" element={<PodcastPlayerView />} />
+          <Route path="*" element={<ErrorPage />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

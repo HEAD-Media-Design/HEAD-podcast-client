@@ -1,14 +1,16 @@
 /**
  * Build-time RSS 2.0 feed from content/episodes/*.json
- * Set PODCAST_SITE_URL to your deployed origin (e.g. https://example.com)
+ * Site origin: `VITE_SITE_URL` in repo `.env` (same as index.html). Override with `PODCAST_SITE_URL` in CI if needed.
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadEpisodeJsonFiles } from "./content-utils.ts";
+import { applyRootDotEnv } from "./load-root-env.ts";
 
 const repoRoot = path.join(fileURLToPath(new URL(".", import.meta.url)), "..");
+applyRootDotEnv(repoRoot);
 const OUT_FILE = path.join(repoRoot, "public", "podcast.rss");
 
 function escapeXml(s: string): string {
@@ -25,7 +27,9 @@ function rfc822Date(iso: string): string {
 
 async function main() {
   const siteUrl = (
-    process.env.PODCAST_SITE_URL ?? "https://example.com"
+    process.env.PODCAST_SITE_URL ??
+    process.env.VITE_SITE_URL ??
+    "https://example.com"
   ).replace(/\/$/, "");
   const episodes = await loadEpisodeJsonFiles();
 
