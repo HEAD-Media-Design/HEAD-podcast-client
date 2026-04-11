@@ -20,6 +20,8 @@ import { useAudioLevel } from "./hooks/useAudioLevel";
 /** Matches shell `flex` open transition; main mounts after this so p5 doesn’t fight the layout tween. */
 const LAYOUT_OPEN_MS = 2000;
 
+const DEFAULT_DOCUMENT_TITLE = "Supernova Podcast — by HEAD Media Design";
+
 function PodcastPlayerView() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -28,6 +30,24 @@ function PodcastPlayerView() {
     const i = EPISODES.findIndex((e) => e.slug === slug);
     return i;
   }, [slug]);
+
+  const currentPodcastForMeta = useMemo(() => {
+    if (currentPodcastIndex < 0 || currentPodcastIndex >= EPISODES.length) {
+      return null;
+    }
+    return EPISODES[currentPodcastIndex] ?? null;
+  }, [currentPodcastIndex]);
+
+  useEffect(() => {
+    if (!currentPodcastForMeta) {
+      document.title = DEFAULT_DOCUMENT_TITLE;
+      return;
+    }
+    document.title = `${currentPodcastForMeta.title} — Supernova Podcast`;
+    return () => {
+      document.title = DEFAULT_DOCUMENT_TITLE;
+    };
+  }, [currentPodcastForMeta]);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
