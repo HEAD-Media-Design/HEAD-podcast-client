@@ -18,7 +18,7 @@ function InfoModal({ onClose }: InfoModalProps) {
   }, [onClose]);
 
   return (
-    <div className="absolute top-0 left-0 w-full h-full bg-[#003FADEB] text-white z-50 overflow-auto">
+    <div className="absolute inset-x-0 bottom-0 top-[71px] z-50 overflow-auto bg-[#003FADEB] text-white md:top-[160px]">
       {/* Content */}
       <div className="relative z-10 min-h-full flex flex-col">
         {/* Main Content */}
