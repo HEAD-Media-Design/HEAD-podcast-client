@@ -1259,7 +1259,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/opentype.js@npm:^1.3.9":
+"@types/opentype.js@npm:1.3.9":
   version: 1.3.9
   resolution: "@types/opentype.js@npm:1.3.9"
   checksum: 10c0/5cfc2436d5bfc9d9688a90bd517d4789dcb3ff886c94420635002ca342c3c284392bd9f49e93d330769fc2e6187fa4e3fe1344da72f148b71c2b983dd5b68240
@@ -2747,7 +2747,7 @@ __metadata:
     "@eslint/js": "npm:^9.22.0"
     "@rollup/rollup-linux-x64-gnu": "npm:^4.34.0"
     "@tailwindcss/postcss": "npm:^4.1.4"
-    "@types/opentype.js": "npm:^1.3.9"
+    "@types/opentype.js": "npm:1.3.9"
     "@types/p5": "npm:^1.7.7"
     "@types/react": "npm:^19.0.10"
     "@types/react-dom": "npm:^19.0.4"
@@ -2756,7 +2756,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
     globals: "npm:^16.0.0"
-    opentype.js: "npm:^1.3.4"
+    opentype.js: "npm:1.3.4"
     p5: "npm:^2.2.0"
     p5.sound: "npm:^0.2.0"
     postcss: "npm:^8.5.3"
@@ -3577,7 +3577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"opentype.js@npm:^1.3.4":
+"opentype.js@npm:1.3.4":
   version: 1.3.4
   resolution: "opentype.js@npm:1.3.4"
   dependencies:

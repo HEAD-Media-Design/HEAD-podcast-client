@@ -1,4 +1,4 @@
-# Cloudflare Pages: cache + MIME hints for share / tab assets
+# Cloudflare Pages only. Vercel ignores this file — cache headers live in vercel.json.
 /og-image.png
   Cache-Control: public, max-age=604800
 /og-image.jpg

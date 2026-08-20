@@ -1,4 +1,4 @@
-import opentype from "opentype.js";
+import * as opentype from "opentype.js";
 
 import type { P5Sketch } from "../types/p5Sketch";
 

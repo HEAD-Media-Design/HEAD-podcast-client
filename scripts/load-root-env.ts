@@ -3,7 +3,7 @@ import path from "node:path";
 
 /**
  * Loads repo-root `.env` into `process.env` for keys that are not already set
- * (so Cloudflare / CI env vars win). Used by Node build scripts before Vite runs.
+ * (so Vercel / CI env vars win). Used by Node build scripts before Vite runs.
  */
 export function applyRootDotEnv(repoRoot: string): void {
   const envFile = path.join(repoRoot, ".env");
