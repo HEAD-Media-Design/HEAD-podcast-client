@@ -54,7 +54,6 @@ function PodcastPlayerView() {
   const [duration, setDuration] = useState(0);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
-  const [showNextPrompt, setShowNextPrompt] = useState(false);
   /** Fonts/layout ready; shell begins opening (starburst keeps spinning until `mainRevealReady`). */
   const [siteReady, setSiteReady] = useState(false);
   /** Shell open tween finished; starburst stops; main column mounts and fades in. */
@@ -159,7 +158,6 @@ function PodcastPlayerView() {
   const nextPodcast = () => {
     if (!EPISODES.length) return;
     const continuePlayback = isPlaying;
-    setShowNextPrompt(false);
     setCurrentTime(0);
     const next =
       currentPodcastIndex === EPISODES.length - 1 ? 0 : currentPodcastIndex + 1;
@@ -170,7 +168,6 @@ function PodcastPlayerView() {
   const prevPodcast = () => {
     if (!EPISODES.length) return;
     const continuePlayback = isPlaying;
-    setShowNextPrompt(false);
     setCurrentTime(0);
     const prev =
       currentPodcastIndex === 0 ? EPISODES.length - 1 : currentPodcastIndex - 1;
@@ -180,7 +177,6 @@ function PodcastPlayerView() {
 
   const playNextPodcast = () => {
     if (!EPISODES.length) return;
-    setShowNextPrompt(false);
     setCurrentTime(0);
     const next =
       currentPodcastIndex === EPISODES.length - 1 ? 0 : currentPodcastIndex + 1;
@@ -194,7 +190,6 @@ function PodcastPlayerView() {
         audioPlayerRef.current.pause();
         setIsPlaying(false);
       } else {
-        setShowNextPrompt(false);
         setPlaybackEnded(false);
         await resumeAudioContext();
         await audioPlayerRef.current.play();
@@ -222,7 +217,6 @@ function PodcastPlayerView() {
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
-    setShowNextPrompt(true);
     setPlaybackEnded(true);
   };
 
@@ -313,7 +307,6 @@ function PodcastPlayerView() {
                 <PodcastMainContent
                   currentPodcast={currentPodcast}
                   nextPodcast={nextPodcastItem ?? null}
-                  showNextPrompt={showNextPrompt}
                   onPrevPodcast={prevPodcast}
                   onNextPodcast={nextPodcast}
                   onPlayNext={playNextPodcast}
@@ -370,7 +363,6 @@ function PodcastPlayerView() {
           isPlaying={isPlaying}
           onTogglePlay={togglePlay}
           onSelectPodcast={(index: number) => {
-            setShowNextPrompt(false);
             goToEpisodeIndex(index);
             setCurrentTime(0);
             setIsPlaying(true);

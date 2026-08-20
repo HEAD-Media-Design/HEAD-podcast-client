@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://supernova-podcast.pages.dev/sitemap.xml
+Sitemap: https://head-podcast-client.vercel.app/sitemap.xml

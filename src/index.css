@@ -176,11 +176,12 @@ button {
 }
 
 /* Transcript panel: outer = scroll container (fills height), inner = grid (content height). */
+/* Geometry (top/bottom offsets) comes from utilities on the element — no height here,
+   otherwise it would override the mobile `top-[calc(50%-50px)] bottom-0` box. */
 .transcript-panel {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  height: 100%;
 }
 /* Single-column transcript stack (About moved onto the p5 column). */
 .transcript-panel-inner {
