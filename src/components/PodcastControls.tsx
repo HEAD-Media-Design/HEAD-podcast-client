@@ -86,6 +86,13 @@ const MOBILE_TITLE_CLASS =
 
 const MARQUEE_GAP_PX = 32;
 
+/**
+ * The title's clip box reaches the screen edges (cancelling the bar's side padding) while the
+ * padding keeps the resting title aligned with the author line, so the marquee bleeds off-screen.
+ */
+const MOBILE_TITLE_BLEED_CLASS =
+  "ml-[calc(-1*max(8px,env(safe-area-inset-left,0px)))] mr-[calc(-1*max(16px,env(safe-area-inset-right,0px)))] pl-[max(8px,env(safe-area-inset-left,0px))] pr-[max(16px,env(safe-area-inset-right,0px))]";
+
 type MarqueeLayoutInfo = { overflow: boolean; distancePx: number };
 
 /**
@@ -120,7 +127,11 @@ const MobileMarqueeTitle = memo(function MobileMarqueeTitle({
 
     const update = () => {
       const textW = measure.offsetWidth;
-      const avail = outer.clientWidth;
+      const style = getComputedStyle(outer);
+      const avail =
+        outer.clientWidth -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight);
       const overflow = textW > avail + 1;
       const distancePx = overflow ? textW + MARQUEE_GAP_PX : 0;
       onMarqueeLayout({ overflow, distancePx });
@@ -136,7 +147,9 @@ const MobileMarqueeTitle = memo(function MobileMarqueeTitle({
 
   if (variant === "overlay" && !marqueeOverflow) {
     return (
-      <div className="relative min-h-[19px] min-w-0 overflow-hidden contain-[layout]">
+      <div
+        className={`relative min-h-[19px] min-w-0 overflow-hidden contain-[layout] ${MOBILE_TITLE_BLEED_CLASS}`}
+      >
         <span className={`block min-w-0 ${MOBILE_TITLE_CLASS}`}>
           <span className="block whitespace-nowrap">{title}</span>
         </span>
@@ -148,11 +161,11 @@ const MobileMarqueeTitle = memo(function MobileMarqueeTitle({
     return (
       <div
         ref={outerRef}
-        className="relative min-h-[19px] min-w-0 overflow-hidden contain-[layout]"
+        className={`relative min-h-[19px] min-w-0 overflow-hidden contain-[layout] ${MOBILE_TITLE_BLEED_CLASS}`}
       >
         <span
           ref={measureRef}
-          className={`pointer-events-none absolute left-0 top-0 z-0 whitespace-nowrap opacity-0 ${MOBILE_TITLE_CLASS}`}
+          className={`pointer-events-none absolute top-0 left-[max(8px,env(safe-area-inset-left,0px))] z-0 whitespace-nowrap opacity-0 ${MOBILE_TITLE_CLASS}`}
           aria-hidden
         >
           {title}
@@ -189,7 +202,9 @@ const MobileMarqueeTitle = memo(function MobileMarqueeTitle({
 
   /* overlay + marqueeOverflow */
   return (
-    <div className="relative min-h-[19px] min-w-0 overflow-hidden contain-[layout]">
+    <div
+      className={`relative min-h-[19px] min-w-0 overflow-hidden contain-[layout] ${MOBILE_TITLE_BLEED_CLASS}`}
+    >
       {playbackEnded || !showMarqueeTrack ? (
         <span
           className={`relative block overflow-hidden whitespace-nowrap ${MOBILE_TITLE_CLASS}`}
@@ -245,11 +260,11 @@ function PodcastControlsContentLayer({
 }: PodcastControlsContentLayerProps) {
   return (
     <div
-      className={`flex items-start justify-between px-0 md:px-6 max-md:pl-[max(16px,env(safe-area-inset-left,0px))] max-md:pr-[max(16px,env(safe-area-inset-right,0px))] max-md:pb-2.5 ${
+      className={`flex items-start justify-between px-0 md:px-6 max-md:pl-[max(8px,env(safe-area-inset-left,0px))] max-md:pr-[max(16px,env(safe-area-inset-right,0px))] max-md:pb-2.5 ${
         isOverlay ? "text-white" : "text-black"
       }`}
     >
-      <div className="min-w-0 flex-1 p-2 text-left md:flex-initial md:p-[16px] px-0">
+      <div className="min-w-0 flex-1 py-2 text-left md:py-[16px] md:pr-[217px] px-0">
         <h4 className="m-0 p-0">
           <div className="md:hidden">
             <MobileMarqueeTitle
@@ -264,11 +279,13 @@ function PodcastControlsContentLayer({
               }
             />
           </div>
-          <span className="hidden font-spline-sans-mono text-[42px] not-italic font-medium leading-[38px] tracking-[-1.26px] md:inline">
+          {/* One line, so long titles never reflow the bar; the vertical padding keeps glyphs from being clipped. */}
+          <span className="hidden font-spline-sans-mono text-[42px] not-italic font-medium leading-[38px] tracking-[-1.26px] -my-2 md:truncate py-4">
             {podcast.title}
           </span>
         </h4>
-        <div className="flex items-baseline justify-between gap-2 md:block">
+        {/* Pulls the author line up so its ascenders sit ~4px below the title's descenders. */}
+        <div className="-mt-[4.5px] flex items-baseline justify-between gap-2 md:mt-[2.65px] md:block">
           <p
             className={`min-w-0 flex-1 font-spline-sans-mono text-[12px] not-italic font-normal leading-[19px] tracking-[-0.24px] md:flex-none md:text-[24px] md:leading-[38px] md:tracking-[-0.72px] ${
               isOverlay ? "text-white" : "text-black"
@@ -307,6 +324,8 @@ interface PodcastControlsProps {
 }
 
 const MARQUEE_SPEED_PX_PER_SEC = 28;
+/** The title rests at its start position this long before the marquee begins. */
+const MARQUEE_START_DELAY_MS = 2000;
 
 const PodcastControls: React.FC<PodcastControlsProps> = ({
   podcast,
@@ -373,7 +392,7 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
     }
 
     let raf = 0;
-    let last = performance.now();
+    let last = 0;
     marqueeOffsetRef.current = marqueeOffsetRef.current % marqueeDistancePx;
 
     const tick = (now: number) => {
@@ -390,8 +409,17 @@ const PodcastControls: React.FC<PodcastControlsProps> = ({
       raf = requestAnimationFrame(tick);
     };
 
-    raf = requestAnimationFrame(tick);
+    const start = () => {
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
+    };
+    // Fresh episode (offset 0): show the title still first; otherwise resume where it was.
+    const delay = setTimeout(
+      start,
+      marqueeOffsetRef.current === 0 ? MARQUEE_START_DELAY_MS : 0,
+    );
     return () => {
+      clearTimeout(delay);
       cancelAnimationFrame(raf);
       clearTransforms();
     };
