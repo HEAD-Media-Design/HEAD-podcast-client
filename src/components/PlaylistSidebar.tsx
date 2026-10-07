@@ -47,8 +47,8 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
         aria-label="Playlist"
         aria-hidden={!isOpen}
       >
-        <div className="relative flex flex-shrink-0 items-center justify-between px-4 pb-3 pt-4 md:px-6 h-[160px] border-b-[5px] border-black">
-          <h2 className="min-w-0 shrink font-spline-sans-mono text-[48px] not-italic font-medium  tracking-[-2.4px] text-black md:text-[110px] md:tracking-[-5.5px]">
+        <div className="relative flex flex-shrink-0 items-center justify-between px-4 h-20 md:h-[160px] md:px-6 md:pb-3 md:pt-4 border-b-[5px] border-black">
+          <h2 className="min-w-0 shrink font-spline-sans-mono text-[48px] leading-none not-italic font-medium tracking-[-2.4px] md:leading-normal text-black md:text-[110px] md:tracking-[-5.5px]">
             Playlist
           </h2>
           <button
@@ -72,21 +72,21 @@ const PlaylistSidebar: React.FC<PlaylistSidebarProps> = ({
         </div>
 
         <div className="playlist-sidebar-scroll flex-1 overflow-y-auto text-left">
-          <div className="flex flex-col my-6 mx-4 sm:my-[54px] sm:mx-[30px] sm:items-start">
+          <div className="flex flex-col mt-[21px] mb-6 mx-6 sm:mb-[54px] sm:items-start md:mt-[35px] md:ml-8 md:mr-[19px]">
             <div className="flex items-center justify-between w-full">
               <h3 className="mt-1 font-spline-sans text-[22px] not-italic font-semibold text-black md:mt-0 md:text-[48px] md:tracking-[-0.96px]">
                 Everyday Algorithms
               </h3>
-              <div className="my-auto flex-shrink-0 px-2.5 py-1 rounded-full bg-black text-white text-sm sm:text-[22px] font-spline-sans font-bold h-fit self-start">
+              <div className="my-auto flex-shrink-0 px-2.5 py-1 rounded-full bg-black text-white text-[8px] md:text-[22px] font-spline-sans font-bold h-fit self-start">
                 2024
               </div>
             </div>
-            <p className="mt-2 font-spline-sans text-[14px] not-italic font-normal leading-[18px] text-black md:text-[28px] md:leading-[36px] md:tracking-[-0.56px]">
+            <p className="mt-2 max-w-[16.5em] font-spline-sans text-[14px] not-italic font-normal leading-[18px] text-black md:text-[28px] md:leading-[36px] md:tracking-[-0.56px]">
               Master of Media Design students investigate algorithms embedded in
               our everyday lives.
             </p>
           </div>
-          <ul className="px-4 md:px-6 pb-6">
+          <ul className="px-6 pb-6 md:pl-8 md:pr-[19px]">
             {podcasts.map((podcast, index) => (
               <li
                 key={podcast.slug}

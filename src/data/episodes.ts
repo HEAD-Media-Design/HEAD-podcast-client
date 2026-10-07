@@ -69,7 +69,3 @@ rawEpisodes.sort(
 );
 
 export const EPISODES: readonly Episode[] = rawEpisodes;
-
-export function episodeBodyText(episode: Episode): string {
-  return episode.showNotes ?? episode.summary;
-}

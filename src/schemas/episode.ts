@@ -12,6 +12,8 @@ export type TranscriptSegment = z.infer<typeof transcriptSegmentSchema>;
 
 export const transcriptSchema = z.union([
   z.string(),
+  /** One paragraph per item (keeps the JSON readable); joined back into a single string. */
+  z.array(z.string()).transform((paragraphs) => paragraphs.join("\n\n")),
   z.array(transcriptSegmentSchema),
 ]);
 
