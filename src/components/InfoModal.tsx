@@ -21,10 +21,13 @@ function InfoModal({ onClose }: InfoModalProps) {
     <div className="absolute inset-x-0 bottom-0 top-[71px] z-50 overflow-auto bg-[#003FADEB] text-white md:top-[160px]">
       {/* Content */}
       <div className="relative z-10 min-h-full flex flex-col">
-        {/* Main Content */}
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-[50%_1fr_1fr] gap-8 md:gap-[70px] p-8 md:p-12">
+        {/* Left padding lines the headline's first glyph up with the header's "Supernova" wordmark
+            (padding minus the difference in glyph side bearings), per breakpoint. */}
+        {/* Main Content: wide screens use three columns; tablet widths put the headline block on
+            its own row with About / Dedication / Credits in three columns below, so nothing overlaps. */}
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-[300px_300px_minmax(0,1fr)] xl:grid-cols-[50%_1fr_1fr] gap-8 md:gap-x-10 md:gap-y-16 xl:gap-[70px] p-8 md:p-12 pl-[6.5px] md:pl-[21.5px] lg:pl-[22.5px]">
           {/* Left Column */}
-          <div className="flex flex-col">
+          <div className="flex flex-col md:col-span-3 xl:col-span-1">
             <h1 className="font-spline-sans-mono text-[32px] md:text-[72px] font-medium leading-[38px] md:leading-[90px] text-left">
               Investigating algorithms and machine learning
             </h1>
@@ -80,8 +83,8 @@ function InfoModal({ onClose }: InfoModalProps) {
             </div>
           </div>
 
-          {/* Middle Column */}
-          <div className="flex flex-col gap-8 md:gap-[70px] text-left mt-0 md:mt-[40px]">
+          {/* Middle Column (its two blocks become separate grid columns below xl) */}
+          <div className="flex flex-col gap-8 md:contents xl:mt-[40px] xl:flex xl:gap-[70px] text-left">
             <div>
               <h2 className="font-spline-sans-mono text-[22px] md:text-[36px] leading-[22px] md:leading-[28px] font-semibold mb-3 md:mb-[26px]">
                 About
@@ -105,7 +108,7 @@ function InfoModal({ onClose }: InfoModalProps) {
           </div>
 
           {/* Right Column */}
-          <div className="flex flex-col gap-8 md:gap-[70px] mt-0 md:mt-[40px] text-left">
+          <div className="flex flex-col gap-8 xl:mt-[40px] xl:gap-[70px] text-left">
             <div>
               <h2 className="font-spline-sans-mono text-[22px] md:text-[36px] leading-[22px] md:leading-[28px] font-semibold mb-3 md:mb-[26px]">
                 Credits
@@ -138,7 +141,7 @@ function InfoModal({ onClose }: InfoModalProps) {
         </div>
 
         {/* Mobile: Get in Touch (below stacked columns; address + IG not duplicated in footer) */}
-        <div className="md:hidden px-8 pb-2 text-left">
+        <div className="md:hidden pl-[6.5px] pr-8 pb-2 text-left">
           <h2 className="font-spline-sans-mono text-[22px] font-semibold leading-[22px] tracking-tight text-white">
             Get in Touch
           </h2>
@@ -161,20 +164,24 @@ function InfoModal({ onClose }: InfoModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-8 pt-14 font-spline-sans-mono text-[16px] leading-[38px] tracking-[-0.32px] text-left md:pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4">
-            <span className="hidden md:inline">
-              HEAD — Genève Avenue de Châtelaine 5 CH-1203 Genève
-            </span>
-            <a
-              href="https://www.instagram.com/head_mediadesign/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden hover:underline md:inline"
-            >
-              Follow us on Instagram
-            </a>
-            <span className="w-full text-center md:mt-0 md:w-auto md:text-left">
+        <div className="p-8 pt-14 pl-[6.5px] md:pl-[21.5px] lg:pl-[22.5px] font-spline-sans-mono text-[16px] leading-[38px] tracking-[-0.32px] text-left md:pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end xl:items-center gap-2 md:gap-4">
+            {/* Below xl: Instagram above a two-line address on the left; xl: one row with the copyright. */}
+            <div className="hidden md:flex md:flex-col md:gap-6 xl:contents">
+              <a
+                href="https://www.instagram.com/head_mediadesign/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline md:leading-[22px] xl:order-2 xl:leading-[38px]"
+              >
+                Follow us on Instagram
+              </a>
+              <span className="md:leading-[22px] xl:order-1 xl:leading-[38px]">
+                <span className="block xl:inline">HEAD — Genève</span> Avenue de
+                Châtelaine 5 CH-1203 Genève
+              </span>
+            </div>
+            <span className="w-full text-center md:mt-0 md:w-auto md:text-left md:leading-[22px] xl:order-3 xl:leading-[38px]">
               <span className="md:hidden block text-[12px] leading-[14px] tracking-[-0.24px]">
                 © {new Date().getFullYear()} HEAD — Genève
                 <br />

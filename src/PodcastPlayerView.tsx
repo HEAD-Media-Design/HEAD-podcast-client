@@ -4,21 +4,31 @@ import AudioPlayer, { AudioPlayerRef } from "./components/AudioPlayer";
 import PodcastControls, {
   PodcastControlButtons,
 } from "./components/PodcastControls";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import EmptyState from "./components/EmptyState";
-import ErrorPage from "./components/ErrorPage";
 import Header from "./components/Header";
 import InfoModal from "./components/InfoModal";
-import LoadingSpinner from "./components/LoadingSpinner";
 import PlaylistSidebar from "./components/PlaylistSidebar.tsx";
-import PodcastMainContent from "./components/PodcastMainContent";
 import { EPISODES } from "./data/episodes";
 import { useAudioLevel } from "./hooks/useAudioLevel";
+import { preloadTitleFont } from "./lib/preloadAssets";
 
 /** Matches shell `flex` open transition; main mounts after this so p5 doesn’t fight the layout tween. */
 const LAYOUT_OPEN_MS = 2000;
+
+/*
+ * Both pull in p5 (~300 KB gzipped). Loading them lazily lets the closed shell with its spinning
+ * starburst paint first; the main content chunk is fetched during the loading gate below.
+ */
+const loadMainContent = () => import("./components/PodcastMainContent");
+const PodcastMainContent = lazy(loadMainContent);
+const ErrorPage = lazy(() => import("./components/ErrorPage"));
+/** The closed shell (spinning starburst) shows at least this long, so fast loads don't flash. */
+const LOADING_MIN_MS = 1200;
+/** Open anyway after this long, so slow connections are never stuck on the loading state. */
+const LOADING_MAX_MS = 8000;
 
 const DEFAULT_DOCUMENT_TITLE = "Supernova Podcast — by HEAD Media Design";
 
@@ -54,7 +64,7 @@ function PodcastPlayerView() {
   const [duration, setDuration] = useState(0);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
-  /** Fonts/layout ready; shell begins opening (starburst keeps spinning until `mainRevealReady`). */
+  /** Fonts + title-sketch font loaded (min/max time bounded); shell begins opening (starburst keeps spinning until `mainRevealReady`). */
   const [siteReady, setSiteReady] = useState(false);
   /** Shell open tween finished; starburst stops; main column mounts and fades in. */
   const [mainRevealReady, setMainRevealReady] = useState(false);
@@ -106,14 +116,23 @@ function PodcastPlayerView() {
         });
       });
 
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+
+    const assetsReady = async () => {
+      await Promise.all([
+        document.fonts?.ready.catch(() => undefined),
+        preloadTitleFont().catch(() => undefined), // sketch falls back to Inter
+        loadMainContent().catch(() => undefined), // Suspense retries on mount
+      ]);
+    };
+
     const run = async () => {
-      try {
-        if (typeof document !== "undefined" && document.fonts?.ready) {
-          await document.fonts.ready;
-        }
-      } catch {
-        /* ignore */
-      }
+      // Real readiness, but never shorter than MIN nor longer than MAX.
+      await Promise.race([
+        Promise.all([assetsReady(), wait(LOADING_MIN_MS)]),
+        wait(LOADING_MAX_MS),
+      ]);
       await waitForPaint();
       if (!cancelled) setSiteReady(true);
     };
@@ -244,12 +263,16 @@ function PodcastPlayerView() {
   }
 
   if (currentPodcastIndex < 0) {
-    return <LoadingSpinner />;
+    return null; // redirecting to the first episode
   }
 
   const currentPodcast = EPISODES[currentPodcastIndex];
   if (!currentPodcast) {
-    return <ErrorPage detail="Episode not found." />;
+    return (
+      <Suspense fallback={null}>
+        <ErrorPage detail="Episode not found." />
+      </Suspense>
+    );
   }
 
   const nextPodcastItem =
@@ -304,22 +327,28 @@ function PodcastPlayerView() {
               }`}
             >
               {mainRevealReady ? (
-                <PodcastMainContent
-                  currentPodcast={currentPodcast}
-                  nextPodcast={nextPodcastItem ?? null}
-                  onPrevPodcast={prevPodcast}
-                  onNextPodcast={nextPodcast}
-                  onPlayNext={playNextPodcast}
-                  analyserRef={analyserRef}
-                  simulatedLevelRef={simulatedLevelRef}
-                  isConnected={isConnected}
-                  isPlaying={isPlaying}
-                  currentTime={currentTime}
-                  outputLatency={outputLatency}
-                  playbackOrderIndex={currentPodcastIndex}
-                  hasUserPlayedAudio={hasUserPlayedAudio}
-                  isPlayButtonHovered={playButtonHovered}
-                />
+                <Suspense
+                  fallback={
+                    <div className="h-full min-h-0 bg-white" aria-hidden />
+                  }
+                >
+                  <PodcastMainContent
+                    currentPodcast={currentPodcast}
+                    nextPodcast={nextPodcastItem ?? null}
+                    onPrevPodcast={prevPodcast}
+                    onNextPodcast={nextPodcast}
+                    onPlayNext={playNextPodcast}
+                    analyserRef={analyserRef}
+                    simulatedLevelRef={simulatedLevelRef}
+                    isConnected={isConnected}
+                    isPlaying={isPlaying}
+                    currentTime={currentTime}
+                    outputLatency={outputLatency}
+                    playbackOrderIndex={currentPodcastIndex}
+                    hasUserPlayedAudio={hasUserPlayedAudio}
+                    isPlayButtonHovered={playButtonHovered}
+                  />
+                </Suspense>
               ) : (
                 <div className="h-full min-h-0 bg-white" aria-hidden />
               )}

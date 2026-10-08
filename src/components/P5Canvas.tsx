@@ -9,9 +9,19 @@ export interface P5CanvasProps<T> {
   className?: string;
 }
 
+function isContextLost(instance: p5): boolean {
+  const ctx = (instance as unknown as { drawingContext?: unknown })
+    .drawingContext as WebGLRenderingContext | undefined;
+  return typeof ctx?.isContextLost === "function" && ctx.isContextLost();
+}
+
 /**
  * Mounts p5 sketch in a div. Container readiness is tracked by state so p5
  * is created/cleaned up in a single useEffect (avoids double canvas from ref callback timing).
+ *
+ * Mobile browsers drop WebGL contexts while the tab is backgrounded or the phone sleeps, and p5
+ * can't rebuild its GL state, leaving Chrome's "sad face" placeholder. When that happens the
+ * sketch is recreated (bumping `contextGeneration`) as soon as the page is visible again.
  */
 function P5Canvas<T>({ sketch, props, className }: P5CanvasProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -19,6 +29,7 @@ function P5Canvas<T>({ sketch, props, className }: P5CanvasProps<T>) {
   const p5InstanceRef = useRef<p5 | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [containerReady, setContainerReady] = useState(false);
+  const [contextGeneration, setContextGeneration] = useState(0);
   propsRef.current = props;
 
   const setContainerRef = useCallback((el: HTMLDivElement | null) => {
@@ -50,13 +61,33 @@ function P5Canvas<T>({ sketch, props, className }: P5CanvasProps<T>) {
     const w = el.offsetWidth;
     const h = el.offsetHeight;
     if (w > 0 && h > 0) instance.resizeCanvas(w, h);
+
+    let contextLost = false;
+    const remount = () => setContextGeneration((g) => g + 1);
+    const onContextLost = (e: Event) => {
+      e.preventDefault(); // allow the browser to restore the context
+      contextLost = true;
+      if (document.visibilityState === "visible") remount();
+    };
+    const onPageVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      if (contextLost || isContextLost(instance)) remount();
+    };
+    // Context events don't bubble; capture them from every canvas in the container.
+    el.addEventListener("webglcontextlost", onContextLost, true);
+    document.addEventListener("visibilitychange", onPageVisible);
+    window.addEventListener("pageshow", onPageVisible);
+
     return () => {
+      el.removeEventListener("webglcontextlost", onContextLost, true);
+      document.removeEventListener("visibilitychange", onPageVisible);
+      window.removeEventListener("pageshow", onPageVisible);
       ro.disconnect();
       resizeObserverRef.current = null;
       instance.remove();
       p5InstanceRef.current = null;
     };
-  }, [containerReady, sketch]);
+  }, [containerReady, sketch, contextGeneration]);
 
   return <div ref={setContainerRef} className={className} />;
 }

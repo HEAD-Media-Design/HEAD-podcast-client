@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import EmptyState from "./components/EmptyState";
-import LoadingSpinner from "./components/LoadingSpinner";
 import { EPISODES } from "./data/episodes";
 
 const PodcastPlayerView = lazy(() => import("./PodcastPlayerView"));
@@ -17,7 +16,8 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingSpinner />}>
+      {/* Blank while the route chunk loads; the player shell has its own loading state. */}
+      <Suspense fallback={null}>
         <Routes>
           <Route
             path="/"

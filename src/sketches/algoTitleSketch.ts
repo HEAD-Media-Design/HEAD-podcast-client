@@ -1,17 +1,33 @@
 /**
  * Port of `/Users/haneul/Downloads/final/sketch.js` (+ matching `shader.vert` / `shader.frag`).
- * Original used `assets/SF-Pro-Display-Medium.otf`; this build loads that URL if present,
- * otherwise `/fonts/Inter-24pt-Regular.ttf` (bundled under public/fonts).
+ * Original used `assets/SF-Pro-Display-Medium.otf`; this build loads a basic-Latin subset of it
+ * (`TITLE_FONT_URL`), falling back to `/fonts/Inter-24pt-Regular.ttf` if that fails.
  */
+import * as opentype from "opentype.js";
 import p5 from "p5";
 
+import { TITLE_FONT_URL } from "../lib/preloadAssets";
 import type { P5Sketch } from "../types/p5Sketch";
 
 import fragSrc from "./algoTitleShader.frag?raw";
 import vertSrc from "./algoTitleShader.vert?raw";
 
-const FONT_PRIMARY = "/fonts/SF-Pro-Display-Medium.otf";
+const FONT_PRIMARY = TITLE_FONT_URL;
 const FONT_FALLBACK = "/fonts/Inter-24pt-Regular.ttf";
+
+/**
+ * Hand-tuned pair adjustments from the original sketch (-5px "in", -15px "Wo" at its 220px
+ * desktop size), stored as a fraction of the font size so they hold at every size.
+ */
+/** Desktop title draws this much larger than the ref-fit size, to fill the canvas more. */
+const DESKTOP_TITLE_SCALE = 1.2;
+/** Most of the canvas the enlarged title may cover, leaving room for the dots' hover growth. */
+const DESKTOP_TITLE_MAX_FILL = 0.9;
+
+const MANUAL_KERNING_EM: Record<string, number> = {
+  in: -5 / 220,
+  Wo: -15 / 220,
+};
 
 export interface AlgoTitleSketchProps {
   /** Mirrors global `isButtonHovered` from the original `index.html` + play button. */
@@ -33,6 +49,11 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
   getProps,
 ) => {
   let fontPoints: p5.Font | null = null;
+  /**
+   * Same font file parsed by opentype.js for advance widths: p5 v2's `textWidth` returns a glyph's
+   * ink width (a space measures 0), which made letters collide and words run together.
+   */
+  let metricsFont: opentype.Font | null = null;
   let allPoints: PointDef[] = [];
   const cp = ["#0022ff"];
 
@@ -56,6 +77,9 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
   let refWidth = 1600;
   let refHeight = 900;
   let currentLayout = "";
+  /** Size of the laid-out glyph points in ref units (set when the layout is centred). */
+  let textBlockW = 0;
+  let textBlockH = 0;
 
   let myShader: p5.Shader | null = null;
   let canvasLayer: p5.Graphics | null = null;
@@ -70,14 +94,18 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
     ];
   }
 
-  /** Extra horizontal gap after each glyph (letter-spacing). */
-  function letterTracking() {
-    return fontSize * (currentLayout === "mobile" ? 0.052 : 0.085);
+  /** Pen advance for one character, as the original p5 v1 sketch laid letters out. */
+  function charAdvance(char: string) {
+    if (!metricsFont) return p.textWidth(char);
+    return (
+      metricsFont.charToGlyph(char).advanceWidth! *
+      (fontSize / metricsFont.unitsPerEm)
+    );
   }
 
-  /** Extra width for space characters so word gaps (e.g. Algo World) read clearly. */
-  function wordSpaceExtra() {
-    return fontSize * (currentLayout === "mobile" ? 0.14 : 0.22);
+  /** The original sketch's hand-tuned pair adjustments (no other kerning was applied). */
+  function pairKerning(prevChar: string, char: string) {
+    return (MANUAL_KERNING_EM[prevChar + char] ?? 0) * fontSize;
   }
 
   /** Shrink font until every line fits in ref width and the stack fits in ref height. */
@@ -85,7 +113,8 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
     if (!fontPoints) return;
     const minFs = currentLayout === "mobile" ? 100 : 148;
     const maxW = refWidth * 0.86;
-    const maxH = refHeight * 0.8;
+    // Phones hit the width / max-font limit first; the taller allowance lets tablets fill the canvas.
+    const maxH = refHeight * (currentLayout === "mobile" ? 0.95 : 0.8);
     p.textFont(fontPoints);
     while (fontSize > minFs) {
       p.textSize(fontSize);
@@ -114,6 +143,8 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
       minY = Math.min(minY, pt.y);
       maxY = Math.max(maxY, pt.y);
     }
+    textBlockW = maxX - minX;
+    textBlockH = maxY - minY;
     const pad = fontSize * 0.2;
     minX -= pad;
     maxX += pad;
@@ -136,7 +167,6 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
     allPoints = [];
     const lineHeight = fontSize * 1.22;
     const firstBaseline = fontSize * 0.92;
-    const track = letterTracking();
 
     let lineIdx = 0;
     for (const line of lines) {
@@ -152,11 +182,14 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
 
     for (const line of lines) {
       let currentX = line.x ?? 0;
+      let prevChar = "";
 
       for (let i = 0; i < line.text.length; i++) {
         const char = line.text[i]!;
+        currentX += pairKerning(prevChar, char);
+        prevChar = char;
         if (char === " ") {
-          currentX += p.textWidth(char) + wordSpaceExtra() + track;
+          currentX += charAdvance(char);
           continue;
         }
 
@@ -207,7 +240,7 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
         }
         charGlobalIndex++;
 
-        currentX += p.textWidth(char) + track;
+        currentX += charAdvance(char);
       }
     }
 
@@ -215,21 +248,27 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
   }
 
   function getKernedTextWidth(textValue: string) {
-    const track = letterTracking();
     let widthValue = 0;
-    for (let i = 0; i < textValue.length; i++) {
-      const char = textValue[i]!;
-      if (char === " ") {
-        widthValue += p.textWidth(char) + wordSpaceExtra() + track;
-      } else {
-        widthValue += p.textWidth(char) + track;
-      }
+    let prevChar = "";
+    for (const char of textValue) {
+      widthValue += pairKerning(prevChar, char) + charAdvance(char);
+      prevChar = char;
     }
     return widthValue;
   }
 
+  /**
+   * Stacked layout ref height follows the canvas aspect (capped at the phone value), so a wider
+   * portrait canvas such as a tablet's renders the four lines larger instead of letterboxing them.
+   */
+  function mobileRefHeight() {
+    return p.constrain((960 * p.height) / p.width, 960, 1500);
+  }
+
   function checkLayoutAndBuild() {
-    const newLayout = p.width < 800 ? "mobile" : "desktop";
+    /* Portrait canvases (e.g. tablets held upright) use the stacked four-line mobile layout too. */
+    const newLayout =
+      p.width < 800 || p.height > p.width ? "mobile" : "desktop";
 
     if (newLayout !== currentLayout) {
       currentLayout = newLayout;
@@ -238,7 +277,7 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
         mobileIdlePulseEnabled = true;
         mobilePulsePhase = 0;
         refWidth = 960;
-        refHeight = 1500;
+        refHeight = mobileRefHeight();
         lines = [
           { text: "Exploring" },
           { text: "the" },
@@ -259,6 +298,16 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
       }
 
       p.textFont(fontPoints!);
+      p.textSize(fontSize);
+      fitFontSizeToRef();
+      buildTextLayout();
+    } else if (
+      currentLayout === "mobile" &&
+      Math.abs(mobileRefHeight() - refHeight) > 1
+    ) {
+      // The canvas is resized by its container (not a window resize), so refit here.
+      refHeight = mobileRefHeight();
+      fontSize = layoutTargetFontSize;
       p.textSize(fontSize);
       fitFontSizeToRef();
       buildTextLayout();
@@ -301,23 +350,25 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
       console.error("algoTitleSketch: shader compile failed", e);
     }
 
+    const onFontLoaded = (f: p5.Font, url: string) => {
+      fontPoints = f;
+      p.textFont(fontPoints);
+      p.rectMode(p.CENTER);
+      checkLayoutAndBuild();
+      opentype.load(url, (err, parsed) => {
+        if (err || !parsed) return; // keep the p5-measured layout
+        metricsFont = parsed;
+        refitAndBuild();
+      });
+    };
+
     p.loadFont(
       FONT_PRIMARY,
-      (f) => {
-        fontPoints = f;
-        p.textFont(fontPoints);
-        p.rectMode(p.CENTER);
-        checkLayoutAndBuild();
-      },
+      (f) => onFontLoaded(f, FONT_PRIMARY),
       () => {
         p.loadFont(
           FONT_FALLBACK,
-          (f) => {
-            fontPoints = f;
-            p.textFont(fontPoints);
-            p.rectMode(p.CENTER);
-            checkLayoutAndBuild();
-          },
+          (f) => onFontLoaded(f, FONT_FALLBACK),
           (err: unknown) =>
             console.error("algoTitleSketch: font load failed", err),
         );
@@ -325,13 +376,19 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
     );
   };
 
-  (p as unknown as { windowResized?: () => void }).windowResized = () => {
+  function refitAndBuild() {
     if (!fontPoints) return;
     fontSize = layoutTargetFontSize;
     p.textFont(fontPoints);
     p.textSize(fontSize);
     fitFontSizeToRef();
     buildTextLayout();
+  }
+
+  (p as unknown as { windowResized?: () => void }).windowResized = () => {
+    if (!fontPoints) return;
+    if (currentLayout === "mobile") refHeight = mobileRefHeight();
+    refitAndBuild();
   };
 
   p.mousePressed = () => {
@@ -361,8 +418,17 @@ export const algoTitleSketch: P5Sketch<AlgoTitleSketchProps> = (
 
     /* Always ≤1: entire ref (with centred text) fits inside the canvas — no overflow clip. */
     const scalePadding = currentLayout === "mobile" ? 0.94 : 0.96;
-    const scaleFactor =
+    const fitScale =
       p.min(p.width / refWidth, p.height / refHeight) * scalePadding;
+    /* Desktop title is drawn 20% larger, but never beyond the canvas edges. */
+    const scaleFactor =
+      currentLayout === "desktop" && textBlockW > 0 && textBlockH > 0
+        ? Math.min(
+            fitScale * DESKTOP_TITLE_SCALE,
+            (p.width * DESKTOP_TITLE_MAX_FILL) / textBlockW,
+            (p.height * DESKTOP_TITLE_MAX_FILL) / textBlockH,
+          )
+        : fitScale;
     canvasLayer.scale(scaleFactor);
     canvasLayer.translate(-refWidth / 2, -refHeight / 2);
 

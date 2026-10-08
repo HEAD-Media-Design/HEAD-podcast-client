@@ -280,7 +280,7 @@ function PodcastControlsContentLayer({
             />
           </div>
           {/* One line, so long titles never reflow the bar; the vertical padding keeps glyphs from being clipped. */}
-          <span className="hidden font-spline-sans-mono text-[42px] not-italic font-medium leading-[38px] tracking-[-1.26px] -my-2 md:truncate py-4">
+          <span className="hidden font-spline-sans-mono text-[42px] not-italic font-medium leading-[38px] tracking-[-1.26px] -my-2 py-4 md:block md:truncate">
             {podcast.title}
           </span>
         </h4>
