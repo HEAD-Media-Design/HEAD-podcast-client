@@ -32,6 +32,8 @@ export const episodeJsonSchema = z
       message: "publishedAt must be a parseable date string (e.g. ISO 8601)",
     }),
     audioUrl: httpsUrl,
+    /** Episode length; lets the playlist show durations without fetching each audio file. */
+    durationSeconds: z.number().positive().optional(),
     summary: z.string(),
     showNotes: z.string().optional(),
     transcript: transcriptSchema.optional(),

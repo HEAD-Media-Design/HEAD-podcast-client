@@ -36,7 +36,7 @@
       <guid isPermaLink="true">https://head-podcast-client.vercel.app/episode/google-target-ad</guid>
       <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
       <description>How do people feel about Google's use of their personal information for personalized ads, particularly regarding privacy concerns?</description>
-      <enclosure url="https://pub-c59c577167cb4a0a8e18246fc4491223.r2.dev/podcast/Supernova_Google_s_targeted_ads_and_privacy_Haneul_c86327c1ef.wav" type="audio/mpeg" length="0" />
+      <enclosure url="https://pub-c59c577167cb4a0a8e18246fc4491223.r2.dev/podcast/podcast%3ASupernova_Google_s_targeted_ads_and_privacy_Haneul_c86327c1ef.mp3" type="audio/mpeg" length="0" />
     </item>
     <item>
       <title>Hacking Tinder</title>
@@ -84,7 +84,7 @@
       <guid isPermaLink="true">https://head-podcast-client.vercel.app/episode/twitter-x-podcast</guid>
       <pubDate>Sat, 01 Jun 2024 12:00:00 GMT</pubDate>
       <description>Pros and cons of social network X, its relevance and evolution since its acquisition.</description>
-      <enclosure url="https://pub-c59c577167cb4a0a8e18246fc4491223.r2.dev/podcast/Twitter_x_Podcast_definitive_edition.wav" type="audio/mpeg" length="0" />
+      <enclosure url="https://pub-c59c577167cb4a0a8e18246fc4491223.r2.dev/podcast/Twitter_x_Podcast_definitive_edition.mp3" type="audio/mpeg" length="0" />
     </item>
   </channel>
 </rss>

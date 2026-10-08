@@ -12,6 +12,14 @@ interface AudioPlayerProps {
   onAudioElementReady?: (element: HTMLAudioElement | null) => void;
 }
 
+/** Reload attempts after a network/decode error before the error is shown (per episode). */
+const MAX_RECOVERY_ATTEMPTS = 2;
+
+/** `play()` rejects with AbortError when a newer `load()` (e.g. a quick swipe) interrupts it. */
+function isAbortError(err: unknown) {
+  return err instanceof DOMException && err.name === "AbortError";
+}
+
 export interface AudioPlayerRef {
   play: () => Promise<void> | undefined;
   pause: () => void;
@@ -41,6 +49,9 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
     onResumeBeforePlayRef.current = onResumeBeforePlay;
     const onErrorRef = useRef(onError);
     onErrorRef.current = onError;
+    /** Last known playback position, used to resume after a recovery reload. */
+    const lastTimeRef = useRef(0);
+    const recoveryAttemptsRef = useRef(0);
 
     useEffect(() => {
       const el = audioRef.current;
@@ -48,6 +59,8 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
 
       el.src = audioUrl;
       el.load();
+      lastTimeRef.current = 0;
+      recoveryAttemptsRef.current = 0;
 
       if (!isPlayingRef.current) return;
 
@@ -60,21 +73,17 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
           if (cancelled || !isPlayingRef.current || !audioRef.current) return;
           await audioRef.current.play();
         } catch (err) {
-          if (!cancelled) onErrorRef.current?.(err);
+          if (!cancelled && !isAbortError(err)) onErrorRef.current?.(err);
         }
       };
 
-      // After load(), rely on canplay — the JSX onCanPlay handler can miss if the
-      // event already fired or behaves inconsistently across browsers when src changes.
-      if (el.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
-        void startPlayback();
-      } else {
-        el.addEventListener("canplay", startPlayback, { once: true });
-      }
+      // Call play() right away instead of waiting for `canplay`: iOS Safari doesn't buffer
+      // beyond metadata until play() is requested, so waiting stalled episode switches for seconds.
+      // The browser starts playback as soon as enough data has arrived.
+      void startPlayback();
 
       return () => {
         cancelled = true;
-        el.removeEventListener("canplay", startPlayback);
       };
     }, [audioUrl]);
 
@@ -84,6 +93,44 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
 
     const handleError = () => {
       const el = audioRef.current;
+      // Switching episodes aborts the previous load; that's not a playback failure.
+      if (!el || el.error?.code === MediaError.MEDIA_ERR_ABORTED) return;
+
+      // Mobile connections drop mid-stream (and iOS reports some of those as decode errors):
+      // reload the same source and continue from where it stopped before giving up.
+      const recoverable =
+        el.error?.code === MediaError.MEDIA_ERR_NETWORK ||
+        el.error?.code === MediaError.MEDIA_ERR_DECODE;
+      if (recoverable && recoveryAttemptsRef.current < MAX_RECOVERY_ATTEMPTS) {
+        recoveryAttemptsRef.current += 1;
+        const resumeAt = lastTimeRef.current;
+        const recoveringSrc = el.src;
+        el.addEventListener(
+          "loadedmetadata",
+          () => {
+            if (el.src !== recoveringSrc) return; // switched episodes meanwhile
+            el.currentTime = resumeAt;
+            if (isPlayingRef.current) {
+              el.play().catch((err: unknown) => {
+                if (!isAbortError(err)) onErrorRef.current?.(err);
+              });
+            }
+          },
+          { once: true },
+        );
+        const reload = () => {
+          if (el.src === recoveringSrc) el.load();
+        };
+        // Retrying while still offline would just fail again: wait for the connection,
+        // otherwise back off briefly (1s, then 2s).
+        if (!navigator.onLine) {
+          window.addEventListener("online", reload, { once: true });
+        } else {
+          window.setTimeout(reload, 1000 * recoveryAttemptsRef.current);
+        }
+        return;
+      }
+
       const message =
         el?.error?.message ??
         (el?.error?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
@@ -94,6 +141,7 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
 
     const handleTimeUpdate = () => {
       if (audioRef.current) {
+        lastTimeRef.current = audioRef.current.currentTime;
         onTimeUpdate(audioRef.current.currentTime);
       }
     };
@@ -111,7 +159,10 @@ const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(
     useImperativeHandle(ref, () => ({
       play: () => {
         const p = audioRef.current?.play();
-        if (p?.catch) p.catch((err: unknown) => onError?.(err));
+        if (p?.catch)
+          p.catch((err: unknown) => {
+            if (!isAbortError(err)) onError?.(err);
+          });
         return p;
       },
       pause: () => audioRef.current?.pause(),
